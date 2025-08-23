@@ -1007,6 +1007,12 @@
             const rejectionReasonText = document.getElementById('rejectionReasonText').value;
             const notes = document.getElementById('notes').value;
             
+            // Validasi alasan penolakan jika dipilih tolak
+            if (decision === 'reject' && !rejectionReasonText.trim()) {
+                showNotification('Alasan penolakan harus diisi', 'error');
+                return;
+            }
+            
             showLoading(true);
             
             try {
@@ -1022,6 +1028,7 @@
                     updateData.ktpRejectionReason = rejectionReasonText;
                 }
                 
+                // Update user data in Firestore
                 await db.collection('users').doc(currentVerificationId).update(updateData);
                 
                 // Send notification to user
