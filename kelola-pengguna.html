@@ -9,6 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     <style>
         :root {
             --sidebar-width: 260px;
@@ -87,6 +88,35 @@
             color: #1e40af;
         }
         
+        .verification-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .verification-badge.verified {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .verification-badge.pending {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .verification-badge.rejected {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .verification-badge.not-uploaded {
+            background-color: #e5e7eb;
+            color: #4b5563;
+        }
+        
         .notification {
             position: fixed;
             top: 20px;
@@ -141,6 +171,19 @@
             animation: modalSlide 0.3s ease-out;
         }
         
+        .verification-modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: modalSlide 0.3s ease-out;
+        }
+        
         @keyframes modalSlide {
             from { opacity: 0; transform: translateY(-50px); }
             to { opacity: 1; transform: translateY(0); }
@@ -181,6 +224,166 @@
             100% { transform: rotate(360deg); }
         }
         
+        .decision-card {
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .decision-card.approve {
+            background-color: #f0fdf4;
+            border-color: #10b981;
+        }
+        
+        .decision-card.approve:hover {
+            background-color: #dcfce7;
+        }
+        
+        .decision-card.reject {
+            background-color: #fef2f2;
+            border-color: #ef4444;
+        }
+        
+        .decision-card.reject:hover {
+            background-color: #fee2e2;
+        }
+        
+        .decision-card.selected {
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.5);
+        }
+        
+        .decision-card input[type="radio"] {
+            display: none;
+        }
+        
+        .decision-card.selected input[type="radio"] + .decision-content {
+            color: inherit;
+        }
+        
+        .decision-content {
+            display: flex;
+            align-items: center;
+        }
+        
+        .decision-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+        }
+        
+        .decision-icon.approve {
+            background-color: #10b981;
+            color: white;
+        }
+        
+        .decision-icon.reject {
+            background-color: #ef4444;
+            color: white;
+        }
+        
+        .ktp-image-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .ktp-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+        
+        .ktp-image-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 0.5rem;
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .ktp-control-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .ktp-control-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .zoom-btn {
+            background: #f3f4f6;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .zoom-btn:hover {
+            background: #e5e7eb;
+        }
+        
+        .zoom-level {
+            font-size: 0.875rem;
+            color: #6b7280;
+            min-width: 40px;
+            text-align: center;
+        }
+        
+        .user-eligibility {
+            background-color: #f8fafc;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .eligibility-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        
+        .eligibility-option:last-child {
+            margin-bottom: 0;
+        }
+        
+        .eligibility-option input[type="radio"] {
+            margin-right: 0.75rem;
+        }
+        
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -192,6 +395,11 @@
             
             .main-content {
                 margin-left: 0;
+            }
+            
+            .modal-content, .verification-modal-content {
+                width: 95%;
+                margin: 10% auto;
             }
         }
     </style>
@@ -431,12 +639,90 @@
                     
                     <div>
                         <h4 class="font-medium mb-2">Dokumen KTP</h4>
-                        <div id="ktpContainer" class="border rounded-lg overflow-hidden mb-4">
+                        <div id="ktpContainer" class="border rounded-lg overflow-hidden mb-4 hidden">
                             <img id="detailKtpImage" src="" alt="KTP" class="w-full h-auto">
+                            <div class="ktp-image-controls">
+                                <button class="ktp-control-btn" onclick="rotateImage(-90)">
+                                    <i class="fas fa-undo"></i>
+                                </button>
+                                <button class="ktp-control-btn" onclick="rotateImage(90)">
+                                    <i class="fas fa-redo"></i>
+                                </button>
+                                <a id="downloadKtpLink" href="#" target="_blank" class="ktp-control-btn">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </div>
                         </div>
                         
-                        <div id="noKtpMessage" class="bg-gray-100 p-4 rounded-lg text-center text-gray-500 mb-4 hidden">
+                        <div id="noKtpMessage" class="bg-gray-100 p-4 rounded-lg text-center text-gray-500 mb-4">
                             KTP belum diunggah
+                        </div>
+                        
+                        <div id="ktpVerificationSection" class="hidden">
+                            <h4 class="font-medium mb-2">Verifikasi KTP</h4>
+                            
+                            <div class="decision-cards">
+                                <label class="decision-card approve">
+                                    <input type="radio" name="decision" value="approve">
+                                    <div class="decision-content">
+                                        <div class="decision-icon approve">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="font-medium">Setujui Verifikasi</h5>
+                                            <p class="text-sm text-gray-600">KTP valid dan user berhak diverifikasi</p>
+                                        </div>
+                                    </div>
+                                </label>
+                                
+                                <label class="decision-card reject">
+                                    <input type="radio" name="decision" value="reject">
+                                    <div class="decision-content">
+                                        <div class="decision-icon reject">
+                                            <i class="fas fa-times"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="font-medium">Tolak Verifikasi</h5>
+                                            <p class="text-sm text-gray-600">KTP tidak valid atau user tidak berhak</p>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                            
+                            <div id="rejectionReason" class="hidden">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Alasan Penolakan</label>
+                                <textarea id="rejectionReasonText" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Jelaskan alasan penolakan..."></textarea>
+                            </div>
+                            
+                            <div class="user-eligibility">
+                                <h5 class="font-medium mb-3">Kelayakan User</h5>
+                                <div class="eligibility-option">
+                                    <input type="radio" id="eligibleYes" name="eligibility" value="eligible" checked>
+                                    <label for="eligibleYes">User berhak melakukan verifikasi dan transaksi</label>
+                                </div>
+                                <div class="eligibility-option">
+                                    <input type="radio" id="eligibleNo" name="eligibility" value="not-eligible">
+                                    <label for="eligibleNo">User tidak berhak melakukan verifikasi atau transaksi</label>
+                                </div>
+                                <div class="eligibility-option">
+                                    <input type="radio" id="eligibleTemp" name="eligibility" value="temporary">
+                                    <label for="eligibleTemp">User berhak tetapi dengan batasan tertentu</label>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Catatan (Opsional)</label>
+                                <textarea id="notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Tambahkan catatan jika diperlukan..."></textarea>
+                            </div>
+                            
+                            <div class="flex justify-end space-x-3 mt-6">
+                                <button onclick="closeUserDetailModal()" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                                    Batal
+                                </button>
+                                <button onclick="submitKtpVerification()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                    Simpan Keputusan
+                                </button>
+                            </div>
                         </div>
                         
                         <h4 class="font-medium mb-2">Pengaturan Akun</h4>
@@ -490,10 +776,13 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
+        const storage = firebase.storage();
         
         // Global variables
         let currentUser = null;
         let currentUserId = null;
+        let currentRotation = 0;
+        let currentZoom = 1;
         let users = [];
         let filteredUsers = [];
         let currentPage = 1;
@@ -585,6 +874,26 @@
             document.getElementById('statusToggle').addEventListener('change', function() {
                 const label = document.getElementById('statusToggleLabel');
                 label.textContent = this.checked ? 'Aktif' : 'Nonaktif';
+            });
+            
+            // Decision change for KTP verification
+            document.addEventListener('change', function(e) {
+                if (e.target.name === 'decision') {
+                    const rejectionReason = document.getElementById('rejectionReason');
+                    const decisionCards = document.querySelectorAll('.decision-card');
+                    
+                    decisionCards.forEach(card => {
+                        card.classList.remove('selected');
+                    });
+                    
+                    if (e.target.value === 'approve') {
+                        rejectionReason.classList.add('hidden');
+                        e.target.closest('.decision-card').classList.add('selected');
+                    } else if (e.target.value === 'reject') {
+                        rejectionReason.classList.remove('hidden');
+                        e.target.closest('.decision-card').classList.add('selected');
+                    }
+                }
             });
             
             // Pagination
@@ -717,6 +1026,14 @@
                                 <button onclick="openUserDetailModal('${user.id}')" class="text-blue-600 hover:text-blue-900 text-sm font-medium" title="Detail">
                                     <i class="fas fa-eye"></i>
                                 </button>
+                                ${user.ktpUploaded && !user.ktpVerified && !user.ktpRejected ? 
+                                    `<button onclick="quickApproveKtp('${user.id}')" class="text-green-600 hover:text-green-900 text-sm font-medium" title="Setujui KTP">
+                                        <i class="fas fa-check"></i>
+                                    </button>` : ''}
+                                ${user.ktpUploaded && !user.ktpVerified && !user.ktpRejected ? 
+                                    `<button onclick="quickRejectKtp('${user.id}')" class="text-red-600 hover:text-red-900 text-sm font-medium" title="Tolak KTP">
+                                        <i class="fas fa-times"></i>
+                                    </button>` : ''}
                                 <button onclick="toggleUserStatus('${user.id}')" class="text-${user.inactive ? 'green' : 'red'}-600 hover:text-${user.inactive ? 'green' : 'red'}-900 text-sm font-medium" title="${user.inactive ? 'Aktifkan' : 'Nonaktifkan'}">
                                     <i class="fas fa-${user.inactive ? 'check' : 'ban'}"></i>
                                 </button>
@@ -789,13 +1106,13 @@
         // Get KTP badge HTML
         function getKtpBadge(user) {
             if (user.ktpVerified) {
-                return '<span class="user-badge active">Terverifikasi</span>';
+                return '<span class="verification-badge verified">Terverifikasi</span>';
             } else if (user.ktpRejected) {
-                return '<span class="user-badge inactive">Ditolak</span>';
+                return '<span class="verification-badge rejected">Ditolak</span>';
             } else if (user.ktpUploaded) {
-                return '<span class="user-badge pending">Pending</span>';
+                return '<span class="verification-badge pending">Pending</span>';
             } else {
-                return '<span class="user-badge inactive">Belum Upload</span>';
+                return '<span class="verification-badge not-uploaded">Belum Upload</span>';
             }
         }
         
@@ -808,9 +1125,90 @@
             }
         }
         
+        // Quick approve KTP
+        async function quickApproveKtp(userId) {
+            if (!confirm('Apakah Anda yakin ingin menyetujui KTP pengguna ini?')) {
+                return;
+            }
+            
+            showLoading(true);
+            
+            try {
+                await db.collection('users').doc(userId).update({
+                    ktpVerified: true,
+                    ktpRejected: false,
+                    ktpVerifiedDate: firebase.firestore.FieldValue.serverTimestamp(),
+                    ktpVerifiedBy: currentUser.id,
+                    userEligibility: 'eligible' // Default to eligible when quick approved
+                });
+                
+                // Send notification to user
+                await sendKtpVerificationNotification(userId, 'approve', '', 'eligible');
+                
+                // Log verification activity
+                await logKtpVerificationActivity(userId, 'approve', '', 'eligible');
+                
+                showLoading(false);
+                showNotification('KTP berhasil disetujui. User berhak melakukan transaksi.', 'success');
+                
+                // Reload data
+                loadUserData();
+                
+            } catch (error) {
+                console.error('Error quick approving KTP:', error);
+                showLoading(false);
+                showNotification('Gagal menyetujui KTP', 'error');
+            }
+        }
+        
+        // Quick reject KTP
+        async function quickRejectKtp(userId) {
+            if (!confirm('Apakah Anda yakin ingin menolak KTP pengguna ini?')) {
+                return;
+            }
+            
+            const reason = prompt('Alasan penolakan:');
+            if (reason === null || reason.trim() === '') {
+                showNotification('Alasan penolakan harus diisi', 'error');
+                return;
+            }
+            
+            showLoading(true);
+            
+            try {
+                await db.collection('users').doc(userId).update({
+                    ktpVerified: false,
+                    ktpRejected: true,
+                    ktpRejectedDate: firebase.firestore.FieldValue.serverTimestamp(),
+                    ktpRejectedBy: currentUser.id,
+                    ktpRejectionReason: reason,
+                    userEligibility: 'not-eligible' // Default to not eligible when quick rejected
+                });
+                
+                // Send notification to user
+                await sendKtpVerificationNotification(userId, 'reject', reason, 'not-eligible');
+                
+                // Log verification activity
+                await logKtpVerificationActivity(userId, 'reject', reason, 'not-eligible');
+                
+                showLoading(false);
+                showNotification('KTP berhasil ditolak. User tidak berhak melakukan transaksi.', 'success');
+                
+                // Reload data
+                loadUserData();
+                
+            } catch (error) {
+                console.error('Error quick rejecting KTP:', error);
+                showLoading(false);
+                showNotification('Gagal menolak KTP', 'error');
+            }
+        }
+        
         // Open user detail modal
         async function openUserDetailModal(userId) {
             currentUserId = userId;
+            currentRotation = 0;
+            currentZoom = 1;
             
             try {
                 const userDoc = await db.collection('users').doc(userId).get();
@@ -833,180 +1231,7 @@
                 document.getElementById('detailUserLastLogin').textContent = 
                     userData.lastLogin ? new Date(userData.lastLogin.toDate()).toLocaleDateString('id-ID') : '-';
                 
-                // KTP image
+                // KTP image and verification section
                 const ktpContainer = document.getElementById('ktpContainer');
                 const noKtpMessage = document.getElementById('noKtpMessage');
-                const ktpImage = document.getElementById('detailKtpImage');
-                
-                if (userData.ktpUploaded && userData.ktpUrl) {
-                    ktpContainer.classList.remove('hidden');
-                    noKtpMessage.classList.add('hidden');
-                    ktpImage.src = userData.ktpUrl;
-                } else {
-                    ktpContainer.classList.add('hidden');
-                    noKtpMessage.classList.remove('hidden');
-                }
-                
-                // Status toggle
-                const statusToggle = document.getElementById('statusToggle');
-                const statusToggleLabel = document.getElementById('statusToggleLabel');
-                statusToggle.checked = !userData.inactive;
-                statusToggleLabel.textContent = userData.inactive ? 'Nonaktif' : 'Aktif';
-                
-                document.getElementById('userDetailModal').style.display = 'block';
-                
-            } catch (error) {
-                console.error('Error opening user detail modal:', error);
-                showNotification('Gagal memuat detail pengguna', 'error');
-            }
-        }
-        
-        // Close user detail modal
-        function closeUserDetailModal() {
-            document.getElementById('userDetailModal').style.display = 'none';
-            currentUserId = null;
-        }
-        
-        // Toggle user status
-        async function toggleUserStatus(userId) {
-            try {
-                const userDoc = await db.collection('users').doc(userId).get();
-                const userData = userDoc.data();
-                
-                const newStatus = !userData.inactive;
-                const statusText = newStatus ? 'aktifkan' : 'nonaktifkan';
-                
-                if (!confirm(`Apakah Anda yakin ingin ${statusText} pengguna ini?`)) {
-                    return;
-                }
-                
-                showLoading(true);
-                
-                await db.collection('users').doc(userId).update({
-                    inactive: !newStatus
-                });
-                
-                // Send notification to user
-                await sendStatusNotification(userId, newStatus);
-                
-                showLoading(false);
-                showNotification(`Pengguna berhasil di${statusText}`, 'success');
-                
-                // Reload data
-                loadUserData();
-                
-            } catch (error) {
-                console.error('Error toggling user status:', error);
-                showLoading(false);
-                showNotification('Gagal mengubah status pengguna', 'error');
-            }
-        }
-        
-        // Save user changes
-        async function saveUserChanges() {
-            if (!currentUserId) return;
-            
-            const statusToggle = document.getElementById('statusToggle');
-            const newStatus = !statusToggle.checked;
-            
-            showLoading(true);
-            
-            try {
-                await db.collection('users').doc(currentUserId).update({
-                    inactive: newStatus
-                });
-                
-                // Send notification to user
-                await sendStatusNotification(currentUserId, !newStatus);
-                
-                closeUserDetailModal();
-                showLoading(false);
-                showNotification('Perubahan berhasil disimpan', 'success');
-                
-                // Reload data
-                loadUserData();
-                
-            } catch (error) {
-                console.error('Error saving user changes:', error);
-                showLoading(false);
-                showNotification('Gagal menyimpan perubahan', 'error');
-            }
-        }
-        
-        // Reset password
-        async function resetPassword() {
-            if (!currentUserId) return;
-            
-            if (!confirm('Apakah Anda yakin ingin mereset password pengguna ini?')) {
-                return;
-            }
-            
-            showLoading(true);
-            
-            try {
-                // Get user email
-                const userDoc = await db.collection('users').doc(currentUserId).get();
-                const userData = userDoc.data();
-                
-                // Reset password via Firebase Auth
-                await auth.sendPasswordResetEmail(userData.email);
-                
-                showLoading(false);
-                showNotification('Email reset password telah dikirim', 'success');
-                
-            } catch (error) {
-                console.error('Error resetting password:', error);
-                showLoading(false);
-                showNotification('Gagal mereset password', 'error');
-            }
-        }
-        
-        // Send status notification
-        async function sendStatusNotification(userId, isActive) {
-            try {
-                const title = isActive ? 'Akun Diaktifkan' : 'Akun Dinonaktifkan';
-                const message = isActive 
-                    ? 'Akun Anda telah diaktifkan kembali. Sekarang Anda dapat login dan menggunakan layanan kami.'
-                    : 'Akun Anda telah dinonaktifkan sementara. Silakan hubungi admin untuk informasi lebih lanjut.';
-                
-                await db.collection('notifications').add({
-                    userId: userId,
-                    type: 'account',
-                    title: title,
-                    message: message,
-                    read: false,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                
-                // Update user notification status
-                await db.collection('users').doc(userId).update({
-                    hasUnreadNotifications: true
-                });
-                
-            } catch (error) {
-                console.error('Error sending status notification:', error);
-            }
-        }
-        
-        // Logout
-        async function logout() {
-            try {
-                // Update user status to offline
-                if (currentUser) {
-                    await db.collection('userStatus').doc(currentUser.id).update({
-                        status: 'offline',
-                        lastChanged: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                }
-                
-                await auth.signOut();
-                window.location.href = 'https://apple-sale-original.github.io/login-admin/';
-                
-            } catch (error) {
-                console.error('Error logging out:', error);
-                showNotification('Terjadi kesalahan saat keluar', 'error');
-            }
-        }
-    </script>
-</body>
-</html>
+                const ktp
