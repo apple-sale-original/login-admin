@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Admin - Apple Sale</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            min-height: 100vh;
+        }
+        
+        .login-container {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .form-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .form-input:focus {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #f59e0b;
+        }
+        
+        .login-button {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3);
+        }
+        
+        .floating-shapes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+        
+        .shape {
+            position: absolute;
+            opacity: 0.1;
+        }
+        
+        .shape-1 {
+            width: 80px;
+            height: 80px;
+            background: #f59e0b;
+            border-radius: 50%;
+            top: 20%;
+            left: 10%;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .shape-2 {
+            width: 120px;
+            height: 120px;
+            background: #ef4444;
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            top: 60%;
+            right: 10%;
+            animation: float 8s ease-in-out infinite;
+        }
+        
+        .shape-3 {
+            width: 100px;
+            height: 100px;
+            background: #3b82f6;
+            border-radius: 50%;
+            bottom: 20%;
+            left: 30%;
+            animation: float 7s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 500;
+            z-index: 2000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background-color: #10b981;
+        }
+        
+        .notification.error {
+            background-color: #ef4444;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .loading-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #f59e0b;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Shapes -->
+    <div class="floating-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+    
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <span id="notificationText"></span>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="min-h-screen flex items-center justify-center px-4">
+        <div class="login-container rounded-2xl shadow-2xl p-8 w-full max-w-md">
+            <!-- Logo and Title -->
+            <div class="text-center mb-8">
+                <div class="flex justify-center mb-4">
+                    <div class="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user-shield text-white text-2xl"></i>
+                    </div>
+                </div>
+                <h1 class="text-3xl font-bold text-white mb-2">Admin Login</h1>
+                <p class="text-gray-300">Masuk ke panel administrasi Apple Sale</p>
+            </div>
+            
+            <!-- Login Form -->
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-6">
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-300 mb-2">
+                        Email Admin
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-envelope text-gray-400"></i>
+                        </div>
+                        <input
+                            id="email"
+                            name="email"
+                            type="email"
+                            required
+                            class="form-input block w-full pl-10 pr-3 py-3 text-white placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                            placeholder="admin@applesale.id"
+                        />
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-300 mb-2">
+                        Password
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-lock text-gray-400"></i>
+                        </div>
+                        <input
+                            id="password"
+                            name="password"
+                            type="password"
+                            required
+                            class="form-input block w-full pl-10 pr-3 py-3 text-white placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                            placeholder="••••••••"
+                        />
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                            <button type="button" onclick="togglePassword()" class="text-gray-400 hover:text-gray-300 focus:outline-none">
+                                <i id="passwordIcon" class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <label class="flex items-center">
+                        <input
+                            type="checkbox"
+                            id="remember"
+                            class="h-4 w-4 text-amber-500 focus:ring-amber-500 border-gray-300 rounded"
+                        />
+                        <span class="ml-2 text-sm text-gray-300">Ingat saya</span>
+                    </label>
+                    
+                    <a href="#" onclick="forgotPassword()" class="text-sm text-amber-500 hover:text-amber-400">
+                        Lupa password?
+                    </a>
+                </div>
+                
+                <button
+                    type="submit"
+                    class="login-button w-full py-3 px-4 rounded-lg text-white font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
+                >
+                    <span id="buttonText">Masuk</span>
+                    <span id="buttonSpinner" class="hidden ml-2">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </span>
+                </button>
+            </form>
+            
+            <!-- Additional Links -->
+            <div class="mt-6 text-center">
+                <p class="text-sm text-gray-400">
+                    Belum punya akun admin?
+                    <a href="#" onclick="requestAdminAccess()" class="text-amber-500 hover:text-amber-400 font-medium">
+                        Request Access
+                    </a>
+                </p>
+            </div>
+            
+            <!-- Security Notice -->
+            <div class="mt-8 p-4 bg-amber-900 bg-opacity-20 border border-amber-700 rounded-lg">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-shield-alt text-amber-500"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-amber-200">
+                            <strong>Area Terbatas:</strong> Halaman ini hanya untuk administrator yang berwenang. Akses tidak sah akan dicatat.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBRt-74qBrtvop8J7YOWtDOS7gBMp0dsiQ",
+            authDomain: "kredit-hp-221a1.firebaseapp.com",
+            projectId: "kredit-hp-221a1",
+            storageBucket: "kredit-hp-221a1.firebasestorage.app",
+            messagingSenderId: "428804203261",
+            appId: "1:428804203261:web:51aa0bb8d4a65080a25494",
+            measurementId: "G-EJW00GWVS9"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        
+        // Global variables
+        let loginAttempts = 0;
+        const maxLoginAttempts = 3;
+        
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            
+            notificationText.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+        
+        // Show/hide loading
+        function showLoading(show = true) {
+            const overlay = document.getElementById('loadingOverlay');
+            const buttonText = document.getElementById('buttonText');
+            const buttonSpinner = document.getElementById('buttonSpinner');
+            const loginButton = document.querySelector('button[type="submit"]');
+            
+            if (show) {
+                overlay.classList.add('show');
+                buttonText.textContent = 'Memproses...';
+                buttonSpinner.classList.remove('hidden');
+                loginButton.disabled = true;
+            } else {
+                overlay.classList.remove('show');
+                buttonText.textContent = 'Masuk';
+                buttonSpinner.classList.add('hidden');
+                loginButton.disabled = false;
+            }
+        }
+        
+        // Toggle password visibility
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const passwordIcon = document.getElementById('passwordIcon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                passwordIcon.classList.remove('fa-eye');
+                passwordIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                passwordIcon.classList.remove('fa-eye-slash');
+                passwordIcon.classList.add('fa-eye');
+            }
+        }
+        
+        // Handle login
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const remember = document.getElementById('remember').checked;
+            
+            // Check login attempts
+            if (loginAttempts >= maxLoginAttempts) {
+                showNotification('Terlalu banyak percobaan login. Coba lagi nanti.', 'error');
+                return;
+            }
+            
+            showLoading(true);
+            
+            try {
+                // Sign in with Firebase Auth
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                
+                // Check if user is admin
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                
+                if (!userDoc.exists) {
+                    throw new Error('User not found');
+                }
+                
+                const userData = userDoc.data();
+                
+                // Check admin status
+                if (!userData.isAdmin) {
+                    throw new Error('Not an admin user');
+                }
+                
+                // Check if admin account is active
+                if (userData.accountStatus === 'suspended') {
+                    throw new Error('Account suspended');
+                }
+                
+                // Update last login
+                await db.collection('users').doc(user.uid).update({
+                    lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+                    lastLoginIP: await getUserIP(),
+                    loginDevice: navigator.userAgent
+                });
+                
+                // Set persistence based on remember checkbox
+                if (remember) {
+                    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+                } else {
+                    await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+                }
+                
+                // Log successful login
+                await logLoginActivity(user.uid, email, 'success');
+                
+                showLoading(false);
+                showNotification('Login berhasil! Mengalihkan ke dashboard...', 'success');
+                
+                // Redirect to admin dashboard
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1500);
+                
+            } catch (error) {
+                showLoading(false);
+                loginAttempts++;
+                
+                console.error('Login error:', error);
+                
+                let errorMessage = 'Login gagal. Silakan coba lagi.';
+                
+                switch (error.code) {
+                    case 'auth/user-not-found':
+                        errorMessage = 'Email tidak terdaftar.';
+                        break;
+                    case 'auth/wrong-password':
+                        errorMessage = 'Password salah.';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = 'Format email tidak valid.';
+                        break;
+                    case 'auth/too-many-requests':
+                        errorMessage = 'Terlalu banyak percobaan. Coba lagi nanti.';
+                        break;
+                    case 'auth/user-disabled':
+                        errorMessage = 'Akun telah dinonaktifkan.';
+                        break;
+                    case 'Not an admin user':
+                        errorMessage = 'Anda tidak memiliki akses admin.';
+                        break;
+                    case 'Account suspended':
+                        errorMessage = 'Akun admin telah ditangguh.';
+                        break;
+                    case 'User not found':
+                        errorMessage = 'Akun tidak ditemukan.';
+                        break;
+                }
+                
+                // Log failed login attempt
+                logLoginActivity(null, email, 'failed', errorMessage);
+                
+                showNotification(errorMessage, 'error');
+                
+                // Show remaining attempts
+                const remainingAttempts = maxLoginAttempts - loginAttempts;
+                if (remainingAttempts > 0) {
+                    showNotification(`Sisa percobaan: ${remainingAttempts}`, 'error');
+                }
+            }
+        }
+        
+        // Get user IP address
+        async function getUserIP() {
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                return data.ip;
+            } catch (error) {
+                console.error('Error getting IP:', error);
+                return 'Unknown';
+            }
+        }
+        
+        // Log login activity
+        async function logLoginActivity(userId, email, status, errorMessage = '') {
+            try {
+                await db.collection('adminLoginLogs').add({
+                    userId: userId,
+                    email: email,
+                    status: status,
+                    errorMessage: errorMessage,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    ipAddress: await getUserIP(),
+                    userAgent: navigator.userAgent,
+                    attempts: loginAttempts
+                });
+            } catch (error) {
+                console.error('Error logging login activity:', error);
+            }
+        }
+        
+        // Forgot password
+        function forgotPassword() {
+            const email = prompt('Masukkan email admin Anda:');
+            if (email) {
+                auth.sendPasswordResetEmail(email)
+                    .then(() => {
+                        showNotification('Link reset password telah dikirim ke email Anda.', 'success');
+                    })
+                    .catch((error) => {
+                        showNotification('Gagal mengirim email reset password.', 'error');
+                    });
+            }
+        }
+        
+        // Request admin access
+        function requestAdminAccess() {
+            showNotification('Silakan hubungi super admin untuk request akses admin.', 'info');
+        }
+        
+        // Check if user is already logged in
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                try {
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    if (userDoc.exists && userDoc.data().isAdmin) {
+                        // User is already logged in as admin, redirect to dashboard
+                        window.location.href = 'dashboard.html';
+                    }
+                } catch (error) {
+                    console.error('Error checking admin status:', error);
+                }
+            }
+        });
+        
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Enter key to submit form
+            if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') {
+                const form = document.getElementById('loginForm');
+                if (form) {
+                    form.dispatchEvent(new Event('submit'));
+                }
+            }
+        });
+        
+        // Add form validation
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                e.preventDefault();
+                showNotification('Silakan isi semua field.', 'error');
+            }
+        });
+    </script>
+</body>
+</html>
