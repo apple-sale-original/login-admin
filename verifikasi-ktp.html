@@ -9,6 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     <style>
         :root {
             --sidebar-width: 260px;
@@ -690,6 +691,7 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
+        const storage = firebase.storage();
         
         // Global variables
         let currentUser = null;
@@ -1028,9 +1030,18 @@
                 document.getElementById('modalUserEmail').textContent = userData.email;
                 document.getElementById('modalUserPhone').textContent = userData.phone || '-';
                 document.getElementById('modalUserAddress').textContent = userData.address || '-';
-                document.getElementById('modalKtpImage').src = userData.ktpUrl;
+                
+                // Handle KTP image from Firebase Storage
+                if (userData.ktpUrl) {
+                    document.getElementById('modalKtpImage').src = userData.ktpUrl;
+                    document.getElementById('downloadKtpLink').href = userData.ktpUrl;
+                } else {
+                    // Fallback jika URL tidak tersedia
+                    document.getElementById('modalKtpImage').src = 'https://via.placeholder.com/400x600?text=KTP+Not+Available';
+                    document.getElementById('downloadKtpLink').href = '#';
+                }
+                
                 document.getElementById('modalKtpImage').style.transform = `rotate(${currentRotation}deg) scale(${currentZoom})`;
-                document.getElementById('downloadKtpLink').href = userData.ktpUrl;
                 document.getElementById('zoomLevel').textContent = Math.round(currentZoom * 100) + '%';
                 
                 // Reset form
@@ -1050,7 +1061,7 @@
                 
             } catch (error) {
                 console.error('Error opening verification modal:', error);
-                showNotification('Gagal memuat data verifikasi', 'error');
+                showNotification('Gagal memuat data verifikasi: ' + error.message, 'error');
             }
         }
         
@@ -1126,8 +1137,8 @@
                 await db.collection('users').doc(userId).update({
                     ktpVerified: false,
                     ktpRejected: true,
-                    ktpVerifiedDate: firebase.firestore.FieldValue.serverTimestamp(),
-                    ktpVerifiedBy: currentUser.id,
+                    ktpRejectedDate: firebase.firestore.FieldValue.serverTimestamp(),
+                    ktpRejectedBy: currentUser.id,
                     userEligibility: 'not-eligible' // Default to not eligible when quick rejected
                 });
                 
@@ -1159,6 +1170,12 @@
             const notes = document.getElementById('notes').value;
             const eligibility = document.querySelector('input[name="eligibility"]:checked').value;
             
+            // Validasi alasan penolakan jika dipilih tolak
+            if (decision === 'reject' && !rejectionReasonText.trim()) {
+                showNotification('Alasan penolakan harus diisi', 'error');
+                return;
+            }
+            
             showLoading(true);
             
             try {
@@ -1173,8 +1190,11 @@
                 
                 if (decision === 'reject' && rejectionReasonText) {
                     updateData.ktpRejectionReason = rejectionReasonText;
+                    updateData.ktpRejectedDate = firebase.firestore.FieldValue.serverTimestamp();
+                    updateData.ktpRejectedBy = currentUser.id;
                 }
                 
+                // Update user data in Firestore
                 await db.collection('users').doc(currentVerificationId).update(updateData);
                 
                 // Send notification to user
