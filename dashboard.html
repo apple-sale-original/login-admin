@@ -299,8 +299,8 @@
                     </div>
                 </div>
                 <div>
-                    <p class="sidebar-text font-medium text-gray-800">Admin</p>
-                    <p class="sidebar-text text-sm text-gray-600">admin@applesale.com</p>
+                    <p id="adminName" class="sidebar-text font-medium text-gray-800">Admin</p>
+                    <p id="adminEmail" class="sidebar-text text-sm text-gray-600">admin@applesale.com</p>
                 </div>
             </div>
             
@@ -502,6 +502,25 @@
             content.classList.toggle('expanded');
         }
         
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            
+            notificationText.textContent = message;
+            notification.className = `notification ${type}`;
+            
+            // Show notification
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            // Hide notification after 5 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+        
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
             showLoading('Memuat Dashboard...', 'Mengambil data dashboard');
@@ -515,25 +534,45 @@
                         email: user.email
                     };
                     
-                    // Check if user is admin
-                    const userDoc = await db.collection('users').doc(user.uid).get();
-                    if (userDoc.exists) {
-                        const userData = userDoc.data();
-                        if (userData.role !== 'admin') {
-                            // User is not admin, redirect to home
+                    try {
+                        // Check if user is admin
+                        const userDoc = await db.collection('users').doc(user.uid).get();
+                        if (userDoc.exists) {
+                            const userData = userDoc.data();
+                            console.log("User data in dashboard:", userData); // Debugging
+                            
+                            // PERBAIKAN: Pastikan menggunakan field 'role' bukan 'isAdmin'
+                            if (userData.role !== 'admin') {
+                                // User is not admin, redirect to home
+                                console.log("User is not admin, redirecting to login");
+                                window.location.href = 'index.html';
+                                return;
+                            }
+                            
+                            // Update admin info in sidebar
+                            if (userData.firstName && userData.lastName) {
+                                document.getElementById('adminName').textContent = `${userData.firstName} ${userData.lastName}`;
+                            } else {
+                                document.getElementById('adminName').textContent = 'Admin';
+                            }
+                            document.getElementById('adminEmail').textContent = user.email;
+                        } else {
+                            // User data not found, redirect to home
+                            console.log("User data not found, redirecting to login");
                             window.location.href = 'index.html';
                             return;
                         }
-                    } else {
-                        // User data not found, redirect to home
+                        
+                        // Load dashboard data
+                        await loadDashboardData();
+                    } catch (error) {
+                        console.error('Error checking admin status:', error);
                         window.location.href = 'index.html';
                         return;
                     }
-                    
-                    // Load dashboard data
-                    await loadDashboardData();
                 } else {
                     // User is signed out, redirect to login
+                    console.log("User is not signed in, redirecting to login");
                     window.location.href = 'index.html';
                 }
                 
@@ -811,25 +850,6 @@
                 console.error('Error loading recent activities:', error);
                 throw error;
             }
-        }
-        
-        // Show notification
-        function showNotification(message, type = 'info') {
-            const notification = document.getElementById('notification');
-            const notificationText = document.getElementById('notificationText');
-            
-            notificationText.textContent = message;
-            notification.className = `notification ${type}`;
-            
-            // Show notification
-            setTimeout(() => {
-                notification.classList.add('show');
-            }, 100);
-            
-            // Hide notification after 5 seconds
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 5000);
         }
         
         // Logout
