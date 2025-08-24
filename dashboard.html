@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Apple Sale</title>
+    <title>Dashboard Admin - Apple Sale</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         
@@ -20,22 +21,8 @@
             background: linear-gradient(135deg, #ee4d2d 0%, #ff6533 50%, #ff7337 100%);
         }
         
-        .card {
-            transition: all 0.3s ease;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
-        
-        .verification-card {
-            transition: all 0.3s ease;
-        }
-        
-        .verification-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        .premium-shadow {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
         
         .notification {
@@ -105,6 +92,14 @@
             100% { transform: rotate(360deg); }
         }
         
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
         .sidebar {
             transition: all 0.3s ease;
         }
@@ -121,55 +116,33 @@
             display: none;
         }
         
-        .content-area {
+        .content {
             transition: all 0.3s ease;
         }
         
-        .content-area.expanded {
+        .content.expanded {
             margin-left: 80px;
         }
         
-        .ktp-image {
-            max-width: 100%;
-            max-height: 300px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 80%;
+            max-width: 300px;
+            height: 100%;
+            background-color: white;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
+            transition: right 0.3s ease;
+            overflow-y: auto;
         }
         
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 500;
+        .mobile-menu.open {
+            right: 0;
         }
         
-        .status-badge.pending {
-            background-color: #fef3c7;
-            color: #92400e;
-        }
-        
-        .status-badge.verified {
-            background-color: #d1fae5;
-            color: #065f46;
-        }
-        
-        .status-badge.rejected {
-            background-color: #fee2e2;
-            color: #991b1b;
-        }
-        
-        .action-button {
-            transition: all 0.2s ease;
-        }
-        
-        .action-button:hover {
-            transform: scale(1.05);
-        }
-        
-        .modal {
-            display: none;
+        .mobile-menu-overlay {
             position: fixed;
             top: 0;
             left: 0;
@@ -177,54 +150,73 @@
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
             z-index: 1000;
-            justify-content: center;
-            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
         }
         
-        .modal.show {
-            display: flex;
+        .mobile-menu-overlay.open {
+            opacity: 1;
+            visibility: visible;
         }
         
-        .modal-content {
-            background-color: white;
-            border-radius: 12px;
-            padding: 24px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        
-        .modal-header {
+        .mobile-menu-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
         }
         
-        .modal-close {
+        .mobile-menu-close {
             background: none;
             border: none;
-            font-size: 24px;
+            font-size: 1.5rem;
             cursor: pointer;
             color: #6b7280;
         }
         
-        .modal-close:hover {
-            color: #374151;
+        .mobile-menu-nav {
+            padding: 1rem 0;
         }
         
-        .rejection-reason {
-            margin-top: 16px;
+        .mobile-menu-nav a {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: #4b5563;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
         }
         
-        .rejection-reason textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            resize: vertical;
-            min-height: 100px;
+        .mobile-menu-nav a:hover {
+            background-color: #f3f4f6;
+            color: #ee4d2d;
+        }
+        
+        .mobile-menu-nav a.active {
+            color: #ee4d2d;
+            background-color: #fffbeb;
+        }
+        
+        .mobile-menu-divider {
+            height: 1px;
+            background-color: #e5e7eb;
+            margin: 0.5rem 0;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .content {
+                margin-left: 0;
+            }
         }
     </style>
 </head>
@@ -243,181 +235,217 @@
         <span id="notificationText"></span>
     </div>
     
-    <!-- Modal for Rejection Reason -->
-    <div id="rejectionModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="text-xl font-bold">Alasan Penolakan</h3>
-                <button class="modal-close" onclick="closeRejectionModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="rejection-reason">
-                <p class="text-gray-700 mb-2">Silakan masukkan alasan penolakan verifikasi:</p>
-                <textarea id="rejectionReason" placeholder="Contoh: Dokumen tidak jelas, informasi tidak lengkap, dll."></textarea>
-                <div class="flex justify-end mt-4 space-x-2">
-                    <button onclick="closeRejectionModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors">
-                        Batal
-                    </button>
-                    <button onclick="confirmRejection()" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
-                        Tolak Verifikasi
-                    </button>
+    <!-- Mobile Menu Overlay -->
+    <div id="mobileMenuOverlay" class="mobile-menu-overlay" onclick="toggleMobileMenu()"></div>
+    
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="mobile-menu">
+        <div class="mobile-menu-header">
+            <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-mobile-alt text-white text-base"></i>
                 </div>
+                <span class="text-xl font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">Apple Sale</span>
             </div>
+            <button id="mobileMenuClose" class="mobile-menu-close" onclick="toggleMobileMenu()">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
+        <nav class="mobile-menu-nav">
+            <a href="dashboard.html" class="active">
+                <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
+            </a>
+            <a href="kelola-pengguna.html">
+                <i class="fas fa-users mr-2"></i> Kelola Pengguna
+            </a>
+            <a href="kelola-produk.html">
+                <i class="fas fa-box mr-2"></i> Kelola Produk
+            </a>
+            <a href="kelola-pesanan.html">
+                <i class="fas fa-shopping-cart mr-2"></i> Kelola Pesanan
+            </a>
+            <a href="laporan.html">
+                <i class="fas fa-chart-bar mr-2"></i> Laporan
+            </a>
+            <div class="mobile-menu-divider"></div>
+            <a href="#" onclick="logout()">
+                <i class="fas fa-sign-out-alt mr-2"></i> Keluar
+            </a>
+        </nav>
     </div>
     
     <!-- Sidebar -->
     <div id="sidebar" class="sidebar fixed left-0 top-0 h-full w-64 bg-white shadow-lg z-50">
         <div class="p-4 border-b border-gray-200">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-mobile-alt text-white text-xl"></i>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-mobile-alt text-white text-xl"></i>
+                    </div>
+                    <span class="logo-text text-xl font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">Apple Sale</span>
                 </div>
-                <span class="logo-text text-xl font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">Apple Sale</span>
+                <button onclick="toggleSidebar()" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                    <i class="fas fa-bars"></i>
+                </button>
             </div>
         </div>
         
-        <nav class="p-4">
-            <a href="#" class="flex items-center space-x-3 p-3 rounded-lg bg-orange-50 text-orange-600 mb-2">
-                <i class="fas fa-tachometer-alt"></i>
-                <span class="sidebar-text">Dashboard</span>
-            </a>
-            <a href="#" class="flex items-center space-x-3 p-3 rounded-lg text-gray-700 hover:bg-gray-100 mb-2">
-                <i class="fas fa-users"></i>
-                <span class="sidebar-text">Pengguna</span>
-            </a>
-            <a href="#" class="flex items-center space-x-3 p-3 rounded-lg text-gray-700 hover:bg-gray-100 mb-2">
-                <i class="fas fa-shopping-cart"></i>
-                <span class="sidebar-text">Pesanan</span>
-            </a>
-            <a href="#" class="flex items-center space-x-3 p-3 rounded-lg text-gray-700 hover:bg-gray-100 mb-2">
-                <i class="fas fa-box"></i>
-                <span class="sidebar-text">Produk</span>
-            </a>
-            <a href="#" class="flex items-center space-x-3 p-3 rounded-lg text-gray-700 hover:bg-gray-100 mb-2">
-                <i class="fas fa-chart-line"></i>
-                <span class="sidebar-text">Laporan</span>
-            </a>
-            <a href="#" class="flex items-center space-x-3 p-3 rounded-lg text-gray-700 hover:bg-gray-100 mb-2">
-                <i class="fas fa-cog"></i>
-                <span class="sidebar-text">Pengaturan</span>
-            </a>
-        </nav>
-        
-        <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
-            <button onclick="logout()" class="flex items-center space-x-3 p-3 rounded-lg text-red-600 hover:bg-red-50 w-full">
-                <i class="fas fa-sign-out-alt"></i>
-                <span class="sidebar-text">Keluar</span>
-            </button>
+        <div class="p-4">
+            <div class="flex items-center space-x-3 mb-6">
+                <div class="relative">
+                    <div class="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                    <div class="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-white"></i>
+                    </div>
+                </div>
+                <div>
+                    <p class="sidebar-text font-medium text-gray-800">Admin</p>
+                    <p class="sidebar-text text-sm text-gray-600">admin@applesale.com</p>
+                </div>
+            </div>
+            
+            <nav>
+                <a href="dashboard.html" class="flex items-center space-x-3 p-3 rounded-lg bg-orange-50 text-orange-600 mb-2">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span class="sidebar-text">Dashboard</span>
+                </a>
+                <a href="kelola-pengguna.html" class="flex items-center space-x-3 p-3 rounded-lg text-gray-700 hover:bg-gray-100 mb-2">
+                    <i class="fas fa-users"></i>
+                    <span class="sidebar-text">Kelola Pengguna</span>
+                </a>
+                <a href="kelola-produk.html" class="flex items-center space-x-3 p-3 rounded-lg text-gray-700 hover:bg-gray-100 mb-2">
+                    <i class="fas fa-box"></i>
+                    <span class="sidebar-text">Kelola Produk</span>
+                </a>
+                <a href="kelola-pesanan.html" class="flex items-center space-x-3 p-3 rounded-lg text-gray-700 hover:bg-gray-100 mb-2">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="sidebar-text">Kelola Pesanan</span>
+                </a>
+                <a href="laporan.html" class="flex items-center space-x-3 p-3 rounded-lg text-gray-700 hover:bg-gray-100 mb-2">
+                    <i class="fas fa-chart-bar"></i>
+                    <span class="sidebar-text">Laporan</span>
+                </a>
+                <div class="border-t border-gray-200 my-4"></div>
+                <a href="#" onclick="logout()" class="flex items-center space-x-3 p-3 rounded-lg text-red-600 hover:bg-red-50">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span class="sidebar-text">Keluar</span>
+                </a>
+            </nav>
         </div>
     </div>
     
     <!-- Main Content -->
-    <div id="contentArea" class="content-area ml-64">
-        <!-- Header -->
-        <header class="bg-white shadow-sm">
-            <div class="flex items-center justify-between p-4">
-                <button id="toggleSidebar" class="text-gray-600 hover:text-gray-900">
-                    <i class="fas fa-bars text-xl"></i>
-                </button>
-                
-                <div class="flex items-center space-x-4">
-                    <div class="relative">
-                        <button class="text-gray-600 hover:text-gray-900">
-                            <i class="fas fa-bell text-xl"></i>
-                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
+    <div id="content" class="content ml-64 min-h-screen">
+        <!-- Top Navigation -->
+        <nav class="bg-white shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center">
+                        <button onclick="toggleSidebar()" class="md:hidden text-gray-500 hover:text-gray-700 focus:outline-none mr-4">
+                            <i class="fas fa-bars"></i>
                         </button>
+                        <h1 class="text-xl font-bold text-gray-800">Dashboard</h1>
                     </div>
-                    
-                    <div class="flex items-center space-x-2">
-                        <div class="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center">
-                            <i class="fas fa-user text-white text-sm"></i>
-                        </div>
-                        <span class="font-medium">Admin</span>
+                    <div class="flex items-center space-x-4">
+                        <button class="text-gray-500 hover:text-gray-700 relative">
+                            <i class="fas fa-bell text-xl"></i>
+                            <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+                        </button>
+                        <button class="md:hidden text-gray-500 hover:text-gray-700" onclick="toggleMobileMenu()">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
                     </div>
                 </div>
             </div>
-        </header>
+        </nav>
         
         <!-- Dashboard Content -->
         <main class="p-6">
-            <div class="mb-6">
-                <h1 class="text-2xl font-bold text-gray-800 mb-2">Dashboard Admin</h1>
-                <p class="text-gray-600">Kelola verifikasi pengguna dan pantau aktivitas sistem</p>
-            </div>
-            
             <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div class="card bg-white rounded-xl shadow-md p-6">
+                <div class="stat-card bg-white rounded-xl shadow p-6">
                     <div class="flex items-center justify-between mb-4">
                         <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                             <i class="fas fa-users text-blue-600 text-xl"></i>
                         </div>
-                        <span class="text-sm text-gray-500">Total Pengguna</span>
+                        <span class="text-sm font-medium text-green-600 bg-green-100 px-2 py-1 rounded">+12%</span>
                     </div>
-                    <h3 id="totalUsers" class="text-2xl font-bold text-gray-800 mb-1">0</h3>
-                    <p class="text-sm text-gray-600">Terdaftar</p>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-1" id="totalUsers">0</h3>
+                    <p class="text-gray-600">Total Pengguna</p>
                 </div>
                 
-                <div class="card bg-white rounded-xl shadow-md p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-clock text-yellow-600 text-xl"></i>
-                        </div>
-                        <span class="text-sm text-gray-500">Menunggu Verifikasi</span>
-                    </div>
-                    <h3 id="pendingVerifications" class="text-2xl font-bold text-gray-800 mb-1">0</h3>
-                    <p class="text-sm text-gray-600">KTP/Paspor</p>
-                </div>
-                
-                <div class="card bg-white rounded-xl shadow-md p-6">
+                <div class="stat-card bg-white rounded-xl shadow p-6">
                     <div class="flex items-center justify-between mb-4">
                         <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                             <i class="fas fa-check-circle text-green-600 text-xl"></i>
                         </div>
-                        <span class="text-sm text-gray-500">Terverifikasi</span>
+                        <span class="text-sm font-medium text-green-600 bg-green-100 px-2 py-1 rounded">+8%</span>
                     </div>
-                    <h3 id="verifiedUsers" class="text-2xl font-bold text-gray-800 mb-1">0</h3>
-                    <p class="text-sm text-gray-600">Pengguna</p>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-1" id="verifiedUsers">0</h3>
+                    <p class="text-gray-600">Pengguna Terverifikasi</p>
                 </div>
                 
-                <div class="card bg-white rounded-xl shadow-md p-6">
+                <div class="stat-card bg-white rounded-xl shadow p-6">
                     <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-times-circle text-red-600 text-xl"></i>
+                        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-clock text-yellow-600 text-xl"></i>
                         </div>
-                        <span class="text-sm text-gray-500">Ditolak</span>
+                        <span class="text-sm font-medium text-red-600 bg-red-100 px-2 py-1 rounded">+5%</span>
                     </div>
-                    <h3 id="rejectedUsers" class="text-2xl font-bold text-gray-800 mb-1">0</h3>
-                    <p class="text-sm text-gray-600">Verifikasi</p>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-1" id="pendingVerifications">0</h3>
+                    <p class="text-gray-600">Verifikasi Tertunda</p>
+                </div>
+                
+                <div class="stat-card bg-white rounded-xl shadow p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-shopping-cart text-purple-600 text-xl"></i>
+                        </div>
+                        <span class="text-sm font-medium text-green-600 bg-green-100 px-2 py-1 rounded">+15%</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-1" id="totalOrders">0</h3>
+                    <p class="text-gray-600">Total Pesanan</p>
                 </div>
             </div>
             
-            <!-- Verification Requests -->
-            <div class="bg-white rounded-xl shadow-md p-6 mb-8">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-xl font-bold text-gray-800">Permintaan Verifikasi</h2>
-                    <div class="flex items-center space-x-2">
-                        <select id="filterStatus" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-400 focus:border-transparent">
-                            <option value="all">Semua Status</option>
-                            <option value="pending">Menunggu Verifikasi</option>
-                            <option value="verified">Terverifikasi</option>
-                            <option value="rejected">Ditolak</option>
-                        </select>
-                        <button onclick="loadVerificationRequests()" class="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors">
-                            <i class="fas fa-sync-alt mr-2"></i>Refresh
-                        </button>
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow p-6">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4">Pertumbuhan Pengguna</h2>
+                    <div class="h-80">
+                        <canvas id="userGrowthChart"></canvas>
                     </div>
                 </div>
                 
-                <div id="verificationList" class="space-y-4">
-                    <!-- Verification requests will be loaded here -->
+                <div class="bg-white rounded-xl shadow p-6">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4">Status Verifikasi</h2>
+                    <div class="h-80">
+                        <canvas id="verificationStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Activities -->
+            <div class="bg-white rounded-xl shadow p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg font-bold text-gray-800">Aktivitas Terbaru</h2>
+                    <a href="#" class="text-sm font-medium text-orange-600 hover:text-orange-800">Lihat Semua</a>
                 </div>
                 
-                <div id="noVerifications" class="text-center py-12 hidden">
-                    <i class="fas fa-inbox text-gray-400 text-5xl mb-4"></i>
-                    <p class="text-gray-600">Tidak ada permintaan verifikasi</p>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengguna</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aktivitas</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200" id="recentActivitiesTable">
+                            <!-- Table rows will be populated by JavaScript -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </main>
@@ -429,6 +457,7 @@
             apiKey: "AIzaSyBRt-74qBrtvop8J7YOWtDOS7gBMp0dsiQ",
             authDomain: "kredit-hp-221a1.firebaseapp.com",
             projectId: "kredit-hp-221a1",
+            storageBucket: "kredit-hp-221a1.firebasestorage.app",
             messagingSenderId: "428804203261",
             appId: "1:428804203261:web:51aa0bb8d4a65080a25494",
             measurementId: "G-EJW00GWVS9"
@@ -441,8 +470,8 @@
         
         // Global variables
         let currentUser = null;
-        let verificationRequests = [];
-        let selectedUserId = null;
+        let userGrowthChart = null;
+        let verificationStatusChart = null;
         
         // Loading functions
         function showLoading(title = 'Memuat...', message = 'Mohon tunggu sebentar') {
@@ -455,34 +484,54 @@
             document.getElementById('loadingOverlay').classList.remove('show');
         }
         
+        // Mobile menu functions
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+            
+            mobileMenu.classList.toggle('open');
+            mobileMenuOverlay.classList.toggle('open');
+        }
+        
+        // Sidebar functions
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const content = document.getElementById('content');
+            
+            sidebar.classList.toggle('collapsed');
+            content.classList.toggle('expanded');
+        }
+        
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
-            showLoading('Memuat Dashboard...', 'Mengambil data admin');
+            showLoading('Memuat Dashboard...', 'Mengambil data dashboard');
             
-            // Check admin session
+            // Check user session
             auth.onAuthStateChanged(async (user) => {
                 if (user) {
+                    // User is signed in
+                    currentUser = {
+                        id: user.uid,
+                        email: user.email
+                    };
+                    
                     // Check if user is admin
                     const userDoc = await db.collection('users').doc(user.uid).get();
-                    if (userDoc.exists && userDoc.data().role === 'admin') {
-                        currentUser = {
-                            id: user.uid,
-                            email: user.email,
-                            ...userDoc.data()
-                        };
-                        
-                        // Load dashboard data
-                        await loadDashboardData();
-                        
-                        // Load verification requests
-                        await loadVerificationRequests();
-                        
-                        // Setup event listeners
-                        setupEventListeners();
+                    if (userDoc.exists) {
+                        const userData = userDoc.data();
+                        if (userData.role !== 'admin') {
+                            // User is not admin, redirect to home
+                            window.location.href = 'index.html';
+                            return;
+                        }
                     } else {
-                        // User is not admin, redirect to login
+                        // User data not found, redirect to home
                         window.location.href = 'index.html';
+                        return;
                     }
+                    
+                    // Load dashboard data
+                    await loadDashboardData();
                 } else {
                     // User is signed out, redirect to login
                     window.location.href = 'index.html';
@@ -492,259 +541,275 @@
             });
         });
         
-        // Setup event listeners
-        function setupEventListeners() {
-            // Toggle sidebar
-            document.getElementById('toggleSidebar').addEventListener('click', function() {
-                const sidebar = document.getElementById('sidebar');
-                const contentArea = document.getElementById('contentArea');
-                
-                sidebar.classList.toggle('collapsed');
-                contentArea.classList.toggle('expanded');
-            });
-            
-            // Filter status
-            document.getElementById('filterStatus').addEventListener('change', function() {
-                filterVerificationRequests(this.value);
-            });
-        }
-        
         // Load dashboard data
         async function loadDashboardData() {
             try {
-                // Get all users
-                const usersSnapshot = await db.collection('users').get();
-                const users = usersSnapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
+                // Load statistics
+                await loadStatistics();
                 
-                // Calculate stats
-                const totalUsers = users.length;
-                const pendingVerifications = users.filter(user => user.ktpUploaded && !user.ktpVerified).length;
-                const verifiedUsers = users.filter(user => user.ktpVerified).length;
-                const rejectedUsers = users.filter(user => user.ktpRejected).length;
+                // Load charts
+                await loadCharts();
                 
-                // Update UI
-                document.getElementById('totalUsers').textContent = totalUsers;
-                document.getElementById('pendingVerifications').textContent = pendingVerifications;
-                document.getElementById('verifiedUsers').textContent = verifiedUsers;
-                document.getElementById('rejectedUsers').textContent = rejectedUsers;
+                // Load recent activities
+                await loadRecentActivities();
             } catch (error) {
                 console.error('Error loading dashboard data:', error);
                 showNotification('Gagal memuat data dashboard', 'error');
             }
         }
         
-        // Load verification requests
-        async function loadVerificationRequests() {
+        // Load statistics
+        async function loadStatistics() {
             try {
-                showLoading('Memuat Permintaan...', 'Mengambil data verifikasi');
+                // Get total users
+                const usersSnapshot = await db.collection('users').get();
+                const totalUsers = usersSnapshot.size;
+                document.getElementById('totalUsers').textContent = totalUsers;
                 
-                // Get users with KTP uploaded
+                // Get verified users
+                const verifiedUsers = usersSnapshot.docs.filter(doc => doc.data().ktpVerified).length;
+                document.getElementById('verifiedUsers').textContent = verifiedUsers;
+                
+                // Get pending verifications
+                const pendingVerifications = usersSnapshot.docs.filter(doc => 
+                    doc.data().ktpUploaded && !doc.data().ktpVerified
+                ).length;
+                document.getElementById('pendingVerifications').textContent = pendingVerifications;
+                
+                // Get total orders
+                const ordersSnapshot = await db.collection('orders').get();
+                const totalOrders = ordersSnapshot.size;
+                document.getElementById('totalOrders').textContent = totalOrders;
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+                throw error;
+            }
+        }
+        
+        // Load charts
+        async function loadCharts() {
+            try {
+                // User growth chart
+                const userGrowthCtx = document.getElementById('userGrowthChart').getContext('2d');
+                
+                // Get user growth data for the last 7 days
+                const userGrowthData = await getUserGrowthData();
+                
+                userGrowthChart = new Chart(userGrowthCtx, {
+                    type: 'line',
+                    data: {
+                        labels: userGrowthData.labels,
+                        datasets: [{
+                            label: 'Pengguna Baru',
+                            data: userGrowthData.data,
+                            backgroundColor: 'rgba(238, 77, 45, 0.2)',
+                            borderColor: 'rgba(238, 77, 45, 1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // Verification status chart
+                const verificationStatusCtx = document.getElementById('verificationStatusChart').getContext('2d');
+                
+                // Get verification status data
+                const verificationStatusData = await getVerificationStatusData();
+                
+                verificationStatusChart = new Chart(verificationStatusCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Terverifikasi', 'Menunggu Verifikasi', 'Belum Upload'],
+                        datasets: [{
+                            data: verificationStatusData,
+                            backgroundColor: [
+                                'rgba(16, 185, 129, 0.8)',
+                                'rgba(245, 158, 11, 0.8)',
+                                'rgba(239, 68, 68, 0.8)'
+                            ],
+                            borderColor: [
+                                'rgba(16, 185, 129, 1)',
+                                'rgba(245, 158, 11, 1)',
+                                'rgba(239, 68, 68, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading charts:', error);
+                throw error;
+            }
+        }
+        
+        // Get user growth data for the last 7 days
+        async function getUserGrowthData() {
+            const labels = [];
+            const data = [];
+            
+            // Get current date
+            const today = new Date();
+            
+            // Generate labels for the last 7 days
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                
+                const label = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+                labels.push(label);
+                
+                // Get start and end of day
+                const startOfDay = new Date(date);
+                startOfDay.setHours(0, 0, 0, 0);
+                
+                const endOfDay = new Date(date);
+                endOfDay.setHours(23, 59, 59, 999);
+                
+                // Query users created on this day
                 const usersSnapshot = await db.collection('users')
-                    .where('ktpUploaded', '==', true)
-                    .orderBy('ktpUploadDate', 'desc')
+                    .where('createdAt', '>=', startOfDay)
+                    .where('createdAt', '<=', endOfDay)
                     .get();
                 
-                verificationRequests = usersSnapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-                
-                // Display verification requests
-                displayVerificationRequests(verificationRequests);
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error loading verification requests:', error);
-                hideLoading();
-                showNotification('Gagal memuat permintaan verifikasi', 'error');
+                data.push(usersSnapshot.size);
             }
+            
+            return { labels, data };
         }
         
-        // Display verification requests
-        function displayVerificationRequests(requests) {
-            const verificationList = document.getElementById('verificationList');
-            const noVerifications = document.getElementById('noVerifications');
+        // Get verification status data
+        async function getVerificationStatusData() {
+            const usersSnapshot = await db.collection('users').get();
             
-            if (requests.length === 0) {
-                verificationList.innerHTML = '';
-                noVerifications.classList.remove('hidden');
-                return;
-            }
+            let verified = 0;
+            let pending = 0;
+            let notUploaded = 0;
             
-            noVerifications.classList.add('hidden');
+            usersSnapshot.forEach(doc => {
+                const userData = doc.data();
+                if (userData.ktpVerified) {
+                    verified++;
+                } else if (userData.ktpUploaded) {
+                    pending++;
+                } else {
+                    notUploaded++;
+                }
+            });
             
-            verificationList.innerHTML = requests.map(user => {
-                const statusBadge = getStatusBadge(user);
-                const uploadDate = user.ktpUploadDate ? 
-                    new Date(user.ktpUploadDate.toDate()).toLocaleDateString('id-ID') : 
-                    'Tanggal tidak diketahui';
+            return [verified, pending, notUploaded];
+        }
+        
+        // Load recent activities
+        async function loadRecentActivities() {
+            try {
+                const recentActivitiesTable = document.getElementById('recentActivitiesTable');
+                recentActivitiesTable.innerHTML = '';
                 
-                return `
-                    <div class="verification-card bg-gray-50 rounded-lg p-4 border border-gray-200">
-                        <div class="flex flex-col md:flex-row md:items-center justify-between">
-                            <div class="flex items-center space-x-4 mb-4 md:mb-0">
-                                <div class="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center">
-                                    <i class="fas fa-user text-white"></i>
+                // Get recent user activities
+                const usersSnapshot = await db.collection('users')
+                    .orderBy('lastActive', 'desc')
+                    .limit(10)
+                    .get();
+                
+                if (usersSnapshot.empty) {
+                    recentActivitiesTable.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="px-4 py-4 text-center text-gray-500">
+                                Tidak ada aktivitas terbaru
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                usersSnapshot.forEach(doc => {
+                    const userData = doc.data();
+                    const row = document.createElement('tr');
+                    
+                    // Format date
+                    let dateText = 'Tidak diketahui';
+                    if (userData.lastActive) {
+                        const date = userData.lastActive.toDate ? 
+                            new Date(userData.lastActive.toDate()) : 
+                            new Date(userData.lastActive);
+                        dateText = date.toLocaleString('id-ID');
+                    }
+                    
+                    // Determine status
+                    let statusBadge = '';
+                    if (userData.ktpVerified) {
+                        statusBadge = '<span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Terverifikasi</span>';
+                    } else if (userData.ktpUploaded) {
+                        statusBadge = '<span class="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Menunggu Verifikasi</span>';
+                    } else {
+                        statusBadge = '<span class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">Belum Upload</span>';
+                    }
+                    
+                    // Determine activity
+                    let activity = 'Login terakhir';
+                    if (userData.ktpUploadDate && !userData.ktpVerified) {
+                        activity = 'Upload KTP';
+                    } else if (userData.ktpVerifiedDate) {
+                        activity = 'Verifikasi berhasil';
+                    } else if (userData.profileUpdated) {
+                        activity = 'Update profil';
+                    }
+                    
+                    row.innerHTML = `
+                        <td class="px-4 py-3 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-user text-white text-xs"></i>
                                 </div>
                                 <div>
-                                    <h3 class="font-semibold text-gray-800">${user.firstName || ''} ${user.lastName || ''}</h3>
-                                    <p class="text-sm text-gray-600">${user.email}</p>
-                                    <p class="text-xs text-gray-500">Upload: ${uploadDate}</p>
+                                    <div class="text-sm font-medium text-gray-900">${userData.firstName || ''} ${userData.lastName || ''}</div>
+                                    <div class="text-sm text-gray-500">${userData.email || ''}</div>
                                 </div>
                             </div>
-                            
-                            <div class="flex items-center space-x-4">
-                                ${statusBadge}
-                                
-                                <div class="flex space-x-2">
-                                    ${!user.ktpVerified && !user.ktpRejected ? `
-                                        <button onclick="viewKTP('${user.id}')" class="action-button px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm">
-                                            <i class="fas fa-eye mr-1"></i>Lihat
-                                        </button>
-                                        <button onclick="approveVerification('${user.id}')" class="action-button px-3 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm">
-                                            <i class="fas fa-check mr-1"></i>Setujui
-                                        </button>
-                                        <button onclick="showRejectionModal('${user.id}')" class="action-button px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm">
-                                            <i class="fas fa-times mr-1"></i>Tolak
-                                        </button>
-                                    ` : `
-                                        <button onclick="viewKTP('${user.id}')" class="action-button px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm">
-                                            <i class="fas fa-eye mr-1"></i>Lihat
-                                        </button>
-                                    `}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-        
-        // Get status badge HTML
-        function getStatusBadge(user) {
-            if (user.ktpVerified) {
-                return '<span class="status-badge verified"><i class="fas fa-check-circle mr-1"></i>Terverifikasi</span>';
-            } else if (user.ktpRejected) {
-                return '<span class="status-badge rejected"><i class="fas fa-times-circle mr-1"></i>Ditolak</span>';
-            } else {
-                return '<span class="status-badge pending"><i class="fas fa-clock mr-1"></i>Menunggu Verifikasi</span>';
-            }
-        }
-        
-        // Filter verification requests
-        function filterVerificationRequests(status) {
-            if (status === 'all') {
-                displayVerificationRequests(verificationRequests);
-            } else {
-                const filtered = verificationRequests.filter(user => {
-                    if (status === 'pending') return !user.ktpVerified && !user.ktpRejected;
-                    if (status === 'verified') return user.ktpVerified;
-                    if (status === 'rejected') return user.ktpRejected;
-                    return true;
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">${activity}</div>
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap">
+                            <div class="text-sm text-gray-500">${dateText}</div>
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap">
+                            ${statusBadge}
+                        </td>
+                    `;
+                    
+                    recentActivitiesTable.appendChild(row);
                 });
-                displayVerificationRequests(filtered);
-            }
-        }
-        
-        // View KTP
-        function viewKTP(userId) {
-            const user = verificationRequests.find(u => u.id === userId);
-            if (!user || !user.ktpUrl) {
-                showNotification('Dokumen KTP tidak ditemukan', 'error');
-                return;
-            }
-            
-            // Open KTP in new window
-            window.open(user.ktpUrl, '_blank');
-        }
-        
-        // Approve verification
-        async function approveVerification(userId) {
-            if (!confirm('Apakah Anda yakin ingin menyetujui verifikasi KTP pengguna ini?')) {
-                return;
-            }
-            
-            showLoading('Menyetujui Verifikasi...', 'Memproses permintaan');
-            
-            try {
-                // Update user verification status
-                await db.collection('users').doc(userId).update({
-                    ktpVerified: true,
-                    ktpVerifiedDate: firebase.firestore.FieldValue.serverTimestamp(),
-                    ktpRejected: false,
-                    ktpRejectionReason: null,
-                    verifiedBy: currentUser.id,
-                    verifiedByName: `${currentUser.firstName} ${currentUser.lastName}`
-                });
-                
-                // Reload verification requests
-                await loadVerificationRequests();
-                
-                // Reload dashboard data
-                await loadDashboardData();
-                
-                hideLoading();
-                showNotification('Verifikasi berhasil disetujui', 'success');
             } catch (error) {
-                console.error('Error approving verification:', error);
-                hideLoading();
-                showNotification('Gagal menyetujui verifikasi', 'error');
-            }
-        }
-        
-        // Show rejection modal
-        function showRejectionModal(userId) {
-            selectedUserId = userId;
-            document.getElementById('rejectionModal').classList.add('show');
-            document.getElementById('rejectionReason').focus();
-        }
-        
-        // Close rejection modal
-        function closeRejectionModal() {
-            document.getElementById('rejectionModal').classList.remove('show');
-            document.getElementById('rejectionReason').value = '';
-            selectedUserId = null;
-        }
-        
-        // Confirm rejection
-        async function confirmRejection() {
-            const reason = document.getElementById('rejectionReason').value.trim();
-            
-            if (!reason) {
-                showNotification('Silakan masukkan alasan penolakan', 'error');
-                return;
-            }
-            
-            closeRejectionModal();
-            
-            showLoading('Menolak Verifikasi...', 'Memproses permintaan');
-            
-            try {
-                // Update user verification status
-                await db.collection('users').doc(selectedUserId).update({
-                    ktpVerified: false,
-                    ktpRejected: true,
-                    ktpRejectionDate: firebase.firestore.FieldValue.serverTimestamp(),
-                    ktpRejectionReason: reason,
-                    rejectedBy: currentUser.id,
-                    rejectedByName: `${currentUser.firstName} ${currentUser.lastName}`
-                });
-                
-                // Reload verification requests
-                await loadVerificationRequests();
-                
-                // Reload dashboard data
-                await loadDashboardData();
-                
-                hideLoading();
-                showNotification('Verifikasi berhasil ditolak', 'success');
-            } catch (error) {
-                console.error('Error rejecting verification:', error);
-                hideLoading();
-                showNotification('Gagal menolak verifikasi', 'error');
+                console.error('Error loading recent activities:', error);
+                throw error;
             }
         }
         
@@ -769,14 +834,11 @@
         
         // Logout
         async function logout() {
-            if (!confirm('Apakah Anda yakin ingin keluar?')) {
-                return;
-            }
-            
-            showLoading('Keluar...', 'Mengakhiri sesi admin');
+            showLoading('Keluar...', 'Mengakhiri sesi');
             
             try {
                 await auth.signOut();
+                
                 hideLoading();
                 
                 // Redirect to login page
