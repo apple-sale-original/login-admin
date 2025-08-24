@@ -9,112 +9,20 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
     <style>
-        :root {
-            --sidebar-width: 260px;
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
         }
         
-        body {
-            background-color: #f3f4f6;
+        .gradient-bg {
+            background: linear-gradient(135deg, #ee4d2d 0%, #ff6533 50%, #ff7337 100%);
         }
         
-        .sidebar {
-            width: var(--sidebar-width);
-            background: linear-gradient(180deg, #1e293b 0%, #334155 100%);
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100vh;
-            z-index: 50;
-            transition: transform 0.3s ease;
-        }
-        
-        .sidebar.collapsed {
-            transform: translateX(-100%);
-        }
-        
-        .main-content {
-            margin-left: var(--sidebar-width);
-            transition: margin-left 0.3s ease;
-        }
-        
-        .main-content.expanded {
-            margin-left: 0;
-        }
-        
-        .nav-item {
-            transition: all 0.3s ease;
-        }
-        
-        .nav-item:hover {
-            background-color: rgba(245, 158, 11, 0.1);
-            border-left: 4px solid #f59e0b;
-        }
-        
-        .nav-item.active {
-            background-color: rgba(245, 158, 11, 0.2);
-            border-left: 4px solid #f59e0b;
-        }
-        
-        .table-container {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-        
-        .user-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-        
-        .user-badge.active {
-            background-color: #d1fae5;
-            color: #065f46;
-        }
-        
-        .user-badge.inactive {
-            background-color: #fee2e2;
-            color: #991b1b;
-        }
-        
-        .user-badge.admin {
-            background-color: #dbeafe;
-            color: #1e40af;
-        }
-        
-        .verification-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-        
-        .verification-badge.verified {
-            background-color: #d1fae5;
-            color: #065f46;
-        }
-        
-        .verification-badge.pending {
-            background-color: #fef3c7;
-            color: #92400e;
-        }
-        
-        .verification-badge.rejected {
-            background-color: #fee2e2;
-            color: #991b1b;
-        }
-        
-        .verification-badge.not-uploaded {
-            background-color: #e5e7eb;
-            color: #4b5563;
+        .premium-shadow {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
         
         .notification {
@@ -146,57 +54,16 @@
             background-color: #3b82f6;
         }
         
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px);
-        }
-        
-        .modal-content {
-            background: white;
-            margin: 5% auto;
-            padding: 0;
-            border-radius: 16px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            animation: modalSlide 0.3s ease-out;
-        }
-        
-        .verification-modal-content {
-            background: white;
-            margin: 5% auto;
-            padding: 0;
-            border-radius: 16px;
-            width: 90%;
-            max-width: 900px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            animation: modalSlide 0.3s ease-out;
-        }
-        
-        @keyframes modalSlide {
-            from { opacity: 0; transform: translateY(-50px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
         .loading-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 9999;
@@ -211,12 +78,13 @@
         }
         
         .loading-spinner {
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             border: 4px solid #f3f4f6;
-            border-top: 4px solid #f59e0b;
+            border-top: 4px solid #ee4d2d;
             border-radius: 50%;
             animation: spin 1s linear infinite;
+            margin-bottom: 20px;
         }
         
         @keyframes spin {
@@ -224,164 +92,185 @@
             100% { transform: rotate(360deg); }
         }
         
-        .decision-card {
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            cursor: pointer;
+        .sidebar {
             transition: all 0.3s ease;
-            border: 2px solid transparent;
         }
         
-        .decision-card.approve {
-            background-color: #f0fdf4;
-            border-color: #10b981;
+        .sidebar.collapsed {
+            width: 80px;
         }
         
-        .decision-card.approve:hover {
-            background-color: #dcfce7;
-        }
-        
-        .decision-card.reject {
-            background-color: #fef2f2;
-            border-color: #ef4444;
-        }
-        
-        .decision-card.reject:hover {
-            background-color: #fee2e2;
-        }
-        
-        .decision-card.selected {
-            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.5);
-        }
-        
-        .decision-card input[type="radio"] {
+        .sidebar.collapsed .sidebar-text {
             display: none;
         }
         
-        .decision-card.selected input[type="radio"] + .decision-content {
-            color: inherit;
+        .sidebar.collapsed .logo-text {
+            display: none;
         }
         
-        .decision-content {
-            display: flex;
-            align-items: center;
+        .content {
+            transition: all 0.3s ease;
         }
         
-        .decision-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 1rem;
+        .content.expanded {
+            margin-left: 80px;
         }
         
-        .decision-icon.approve {
-            background-color: #10b981;
-            color: white;
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 80%;
+            max-width: 300px;
+            height: 100%;
+            background-color: white;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
+            transition: right 0.3s ease;
+            overflow-y: auto;
         }
         
-        .decision-icon.reject {
-            background-color: #ef4444;
-            color: white;
+        .mobile-menu.open {
+            right: 0;
         }
         
-        .ktp-image-container {
-            position: relative;
-            overflow: hidden;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-        }
-        
-        .ktp-image {
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            height: auto;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-menu-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .mobile-menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .mobile-menu-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+        
+        .mobile-menu-nav {
+            padding: 1rem 0;
+        }
+        
+        .mobile-menu-nav a {
             display: block;
+            padding: 0.75rem 1rem;
+            color: #4b5563;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .mobile-menu-nav a:hover {
+            background-color: #f3f4f6;
+            color: #ee4d2d;
+        }
+        
+        .mobile-menu-nav a.active {
+            color: #ee4d2d;
+            background-color: #fffbeb';
+        }
+        
+        .mobile-menu-divider {
+            height: 1px;
+            background-color: #e5e7eb;
+            margin: 0.5rem 0;
+        }
+        
+        .verification-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .verification-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .verification-modal-content {
+            background-color: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(0.9);
             transition: transform 0.3s ease;
         }
         
-        .ktp-image-controls {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 0.5rem;
-            display: flex;
-            justify-content: center;
-            gap: 0.5rem;
+        .verification-modal.show .verification-modal-content {
+            transform: scale(1);
         }
         
-        .ktp-control-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-        
-        .ktp-control-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-        
-        .zoom-controls {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-        
-        .zoom-btn {
-            background: #f3f4f6;
-            border: none;
-            width: 32px;
-            height: 32px;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-        
-        .zoom-btn:hover {
-            background: #e5e7eb;
-        }
-        
-        .zoom-level {
-            font-size: 0.875rem;
-            color: #6b7280;
-            min-width: 40px;
-            text-align: center;
-        }
-        
-        .user-eligibility {
-            background-color: #f8fafc;
+        .ktp-image {
+            max-width: 100%;
+            max-height: 400px;
             border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         
-        .eligibility-option {
-            display: flex;
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status-badge {
+            display: inline-flex;
             align-items: center;
-            margin-bottom: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
         }
         
-        .eligibility-option:last-child {
-            margin-bottom: 0;
+        .status-badge.verified {
+            background-color: #d1fae5;
+            color: #065f46;
         }
         
-        .eligibility-option input[type="radio"] {
-            margin-right: 0.75rem;
+        .status-badge.pending {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-badge.not-uploaded {
+            background-color: #fee2e2;
+            color: #991b1b;
         }
         
         @media (max-width: 768px) {
@@ -389,25 +278,24 @@
                 transform: translateX(-100%);
             }
             
-            .sidebar.mobile-open {
+            .sidebar.open {
                 transform: translateX(0);
             }
             
-            .main-content {
+            .content {
                 margin-left: 0;
-            }
-            
-            .modal-content, .verification-modal-content {
-                width: 95%;
-                margin: 10% auto;
             }
         }
     </style>
 </head>
-<body>
+<body class="bg-gray-50">
     <!-- Loading Overlay -->
     <div id="loadingOverlay" class="loading-overlay">
         <div class="loading-spinner"></div>
+        <div class="text-center">
+            <h3 id="loadingTitle" class="text-xl font-bold text-gray-800 mb-2">Memuat...</h3>
+            <p id="loadingMessage" class="text-gray-600 mb-4">Mohon tunggu sebentar</p>
+        </div>
     </div>
     
     <!-- Notification -->
@@ -415,349 +303,287 @@
         <span id="notificationText"></span>
     </div>
     
-    <!-- Sidebar -->
-    <nav id="sidebar" class="sidebar">
-        <div class="p-6">
-            <div class="flex items-center mb-8">
-                <div class="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-mobile-alt text-white text-xl"></i>
-                </div>
-                <span class="ml-3 text-xl font-bold text-white">Apple Sale</span>
-            </div>
-        </div>
-        
-        <div class="px-4">
-            <div class="text-xs uppercase text-gray-400 font-semibold mb-4">Main Menu</div>
-            <nav class="space-y-1">
-                <a href="dashboard.html" class="nav-item flex items-center px-4 py-3 text-gray-300 hover:text-white rounded-lg">
-                    <i class="fas fa-tachometer-alt w-5 mr-3"></i>
-                    Dashboard
-                </a>
-                <a href="verifikasi-ktp.html" class="nav-item flex items-center px-4 py-3 text-gray-300 hover:text-white rounded-lg">
-                    <i class="fas fa-id-card w-5 mr-3"></i>
-                    Verifikasi KTP
-                    <span id="ktpPendingBadge" class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full hidden">0</span>
-                </a>
-                <a href="kelola-pengguna.html" class="nav-item active flex items-center px-4 py-3 text-gray-300 hover:text-white rounded-lg">
-                    <i class="fas fa-users w-5 mr-3"></i>
-                    Kelola Pengguna
-                </a>
-                <a href="kelola-pesanan.html" class="nav-item flex items-center px-4 py-3 text-gray-300 hover:text-white rounded-lg">
-                    <i class="fas fa-shopping-cart w-5 mr-3"></i>
-                    Kelola Pesanan
-                </a>
-                <a href="laporan.html" class="nav-item flex items-center px-4 py-3 text-gray-300 hover:text-white rounded-lg">
-                    <i class="fas fa-chart-line w-5 mr-3"></i>
-                    Laporan
-                </a>
-            </nav>
-            
-            <div class="mt-8 pt-8 border-t border-gray-700">
-                <div class="text-xs uppercase text-gray-400 font-semibold mb-4">Settings</div>
-                <nav class="space-y-1">
-                    <a href="#" class="nav-item flex items-center px-4 py-3 text-gray-300 hover:text-white rounded-lg">
-                        <i class="fas fa-cog w-5 mr-3"></i>
-                        Pengaturan
-                    </a>
-                    <a href="#" onclick="logout()" class="nav-item flex items-center px-4 py-3 text-gray-300 hover:text-white rounded-lg">
-                        <i class="fas fa-sign-out-alt w-5 mr-3"></i>
-                        Keluar
-                    </a>
-                </nav>
-            </div>
-        </div>
-    </nav>
+    <!-- Mobile Menu Overlay -->
+    <div id="mobileMenuOverlay" class="mobile-menu-overlay" onclick="toggleMobileMenu()"></div>
     
-    <!-- Main Content -->
-    <main id="mainContent" class="main-content">
-        <!-- Top Bar -->
-        <header class="bg-white shadow-sm sticky top-0 z-40">
-            <div class="flex items-center justify-between px-6 py-4">
-                <div class="flex items-center">
-                    <button id="menuToggle" class="md:hidden mr-4 text-gray-600 hover:text-gray-900">
-                        <i class="fas fa-bars text-xl"></i>
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="mobile-menu">
+        <div class="mobile-menu-header">
+            <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-mobile-alt text-white text-base"></i>
+                </div>
+                <span class="text-xl font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">Apple Sale</span>
+            </div>
+            <button id="mobileMenuClose" class="mobile-menu-close" onclick="toggleMobileMenu()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <nav class="mobile-menu-nav">
+            <a href="dashboard.html">
+                <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
+            </a>
+            <a href="kelola-pengguna.html" class="active">
+                <i class="fas fa-users mr-2"></i> Kelola Pengguna
+            </a>
+            <a href="kelola-produk.html">
+                <i class="fas fa-box mr-2"></i> Kelola Produk
+            </a>
+            <a href="kelola-pesanan.html">
+                <i class="fas fa-shopping-cart mr-2"></i> Kelola Pesanan
+            </a>
+            <a href="laporan.html">
+                <i class="fas fa-chart-bar mr-2"></i> Laporan
+            </a>
+            <div class="mobile-menu-divider"></div>
+            <a href="#" onclick="logout()">
+                <i class="fas fa-sign-out-alt mr-2"></i> Keluar
+            </a>
+        </nav>
+    </div>
+    
+    <!-- Verification Modal -->
+    <div id="verificationModal" class="verification-modal">
+        <div class="verification-modal-content">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-800">Verifikasi KTP</h3>
+                    <button onclick="closeVerificationModal()" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
                     </button>
-                    <h1 class="text-2xl font-bold text-gray-800">Kelola Pengguna</h1>
                 </div>
                 
-                <div class="flex items-center space-x-4">
-                    <!-- Notifications -->
-                    <div class="relative">
-                        <button class="text-gray-600 hover:text-gray-900 relative">
-                            <i class="fas fa-bell text-xl"></i>
-                            <span id="notificationBadge" class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
+                <div class="mb-6">
+                    <div class="flex items-center mb-4">
+                        <img id="modalUserAvatar" class="user-avatar mr-3" src="https://via.placeholder.com/40" alt="User Avatar">
+                        <div>
+                            <h4 id="modalUserName" class="font-bold text-gray-800">Loading...</h4>
+                            <p id="modalUserEmail" class="text-sm text-gray-600">Loading...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5 class="font-medium text-gray-700 mb-2">Dokumen KTP</h5>
+                        <img id="modalKtpImage" class="ktp-image w-full" src="https://via.placeholder.com/600" alt="KTP Image">
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h5 class="font-medium text-gray-700 mb-2">Catatan Verifikasi</h5>
+                        <textarea id="verificationNotes" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-400 focus:border-transparent" rows="3" placeholder="Tambahkan catatan untuk verifikasi ini..."></textarea>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3">
+                        <button onclick="rejectVerification()" class="px-4 py-2 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors">
+                            <i class="fas fa-times mr-2"></i>Tolak
+                        </button>
+                        <button onclick="approveVerification()" class="px-4 py-2 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-colors">
+                            <i class="fas fa-check mr-2"></i>Setujui
                         </button>
                     </div>
-                    
-                    <!-- User Profile -->
-                    <div class="flex items-center space-x-3">
-                        <div class="text-right hidden sm:block">
-                            <p class="text-sm font-medium text-gray-800" id="adminName">Loading...</p>
-                            <p class="text-xs text-gray-500">Administrator</p>
-                        </div>
-                        <div class="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center">
-                            <i class="fas fa-user text-white"></i>
-                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar fixed left-0 top-0 h-full w-64 bg-white shadow-lg z-50">
+        <div class="p-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-mobile-alt text-white text-xl"></i>
+                    </div>
+                    <span class="logo-text text-xl font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">Apple Sale</span>
+                </div>
+                <button onclick="toggleSidebar()" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="p-4">
+            <div class="flex items-center space-x-3 mb-6">
+                <div class="relative">
+                    <div class="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                    <div class="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-white"></i>
+                    </div>
+                </div>
+                <div>
+                    <p class="sidebar-text font-medium text-gray-800">Admin</p>
+                    <p class="sidebar-text text-sm text-gray-600">admin@applesale.com</p>
+                </div>
+            </div>
+            
+            <nav>
+                <a href="dashboard.html" class="flex items-center space-x-3 p-3 rounded-lg text-gray-700 hover:bg-gray-100 mb-2">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span class="sidebar-text">Dashboard</span>
+                </a>
+                <a href="kelola-pengguna.html" class="flex items-center space-x-3 p-3 rounded-lg bg-orange-50 text-orange-600 mb-2">
+                    <i class="fas fa-users"></i>
+                    <span class="sidebar-text">Kelola Pengguna</span>
+                </a>
+                <a href="kelola-produk.html" class="flex items-center space-x-3 p-3 rounded-lg text-gray-700 hover:bg-gray-100 mb-2">
+                    <i class="fas fa-box"></i>
+                    <span class="sidebar-text">Kelola Produk</span>
+                </a>
+                <a href="kelola-pesanan.html" class="flex items-center space-x-3 p-3 rounded-lg text-gray-700 hover:bg-gray-100 mb-2">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="sidebar-text">Kelola Pesanan</span>
+                </a>
+                <a href="laporan.html" class="flex items-center space-x-3 p-3 rounded-lg text-gray-700 hover:bg-gray-100 mb-2">
+                    <i class="fas fa-chart-bar"></i>
+                    <span class="sidebar-text">Laporan</span>
+                </a>
+                <div class="border-t border-gray-200 my-4"></div>
+                <a href="#" onclick="logout()" class="flex items-center space-x-3 p-3 rounded-lg text-red-600 hover:bg-red-50">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span class="sidebar-text">Keluar</span>
+                </a>
+            </nav>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div id="content" class="content ml-64 min-h-screen">
+        <!-- Top Navigation -->
+        <nav class="bg-white shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center">
+                        <button onclick="toggleSidebar()" class="md:hidden text-gray-500 hover:text-gray-700 focus:outline-none mr-4">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <h1 class="text-xl font-bold text-gray-800">Kelola Pengguna</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button class="text-gray-500 hover:text-gray-700 relative">
+                            <i class="fas fa-bell text-xl"></i>
+                            <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+                        </button>
+                        <button class="md:hidden text-gray-500 hover:text-gray-700" onclick="toggleMobileMenu()">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
                     </div>
                 </div>
             </div>
-        </header>
+        </nav>
         
-        <!-- User Management Content -->
-        <div class="p-6">
-            <!-- Stats and Filter -->
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                <div class="flex flex-wrap gap-4">
-                    <div class="bg-white rounded-lg shadow p-4 flex items-center">
-                        <div class="p-2 rounded-full bg-blue-100 text-blue-600 mr-3">
-                            <i class="fas fa-users"></i>
+        <!-- Users Management Content -->
+        <main class="p-6">
+            <!-- Filters and Search -->
+            <div class="bg-white rounded-xl shadow p-6 mb-6">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4 md:mb-0">Daftar Pengguna</h2>
+                    <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+                        <div class="relative">
+                            <input type="text" id="searchInput" placeholder="Cari pengguna..." class="w-full sm:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-400 focus:border-transparent">
+                            <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
                         </div>
-                        <div>
-                            <p class="text-sm text-gray-500">Total Pengguna</p>
-                            <p class="text-xl font-bold" id="totalUsersCount">0</p>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white rounded-lg shadow p-4 flex items-center">
-                        <div class="p-2 rounded-full bg-green-100 text-green-600 mr-3">
-                            <i class="fas fa-user-check"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500">Pengguna Aktif</p>
-                            <p class="text-xl font-bold" id="activeUsersCount">0</p>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white rounded-lg shadow p-4 flex items-center">
-                        <div class="p-2 rounded-full bg-red-100 text-red-600 mr-3">
-                            <i class="fas fa-user-times"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500">Pengguna Nonaktif</p>
-                            <p class="text-xl font-bold" id="inactiveUsersCount">0</p>
-                        </div>
+                        <select id="statusFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-400 focus:border-transparent">
+                            <option value="">Semua Status</option>
+                            <option value="verified">Terverifikasi</option>
+                            <option value="pending">Menunggu Verifikasi</option>
+                            <option value="not-uploaded">Belum Upload</option>
+                        </select>
                     </div>
                 </div>
                 
-                <div class="flex flex-wrap gap-2">
-                    <select id="statusFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500">
-                        <option value="all">Semua Status</option>
-                        <option value="active">Aktif</option>
-                        <option value="inactive">Nonaktif</option>
-                    </select>
+                <!-- Stats -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-users text-blue-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Total Pengguna</p>
+                                <p class="text-xl font-bold text-gray-800" id="totalUsersCount">0</p>
+                            </div>
+                        </div>
+                    </div>
                     
-                    <select id="ktpFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500">
-                        <option value="all">Semua KTP</option>
-                        <option value="verified">Terverifikasi</option>
-                        <option value="pending">Pending</option>
-                        <option value="rejected">Ditolak</option>
-                        <option value="not-uploaded">Belum Upload</option>
-                    </select>
+                    <div class="bg-green-50 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-check-circle text-green-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Terverifikasi</p>
+                                <p class="text-xl font-bold text-gray-800" id="verifiedUsersCount">0</p>
+                            </div>
+                        </div>
+                    </div>
                     
-                    <div class="relative">
-                        <input type="text" id="searchInput" placeholder="Cari nama atau email..." 
-                               class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500">
-                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                    <div class="bg-yellow-50 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-clock text-yellow-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Menunggu Verifikasi</p>
+                                <p class="text-xl font-bold text-gray-800" id="pendingUsersCount">0</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             
-            <!-- User Table -->
-            <div class="table-container">
-                <div class="p-6">
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead>
-                                <tr class="border-b">
-                                    <th class="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase">Nama</th>
-                                    <th class="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase">Email</th>
-                                    <th class="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase">Telepon</th>
-                                    <th class="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase">Status KTP</th>
-                                    <th class="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase">Status Akun</th>
-                                    <th class="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase">Tanggal Daftar</th>
-                                    <th class="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="userTableBody" class="divide-y divide-gray-200">
-                                <!-- Data will be loaded here -->
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <!-- Pagination -->
-                    <div class="flex items-center justify-between mt-6">
-                        <div class="text-sm text-gray-700">
-                            Menampilkan <span id="startItem">0</span> - <span id="endItem">0</span> dari <span id="totalItems">0</span> data
-                        </div>
-                        <div class="flex space-x-2">
-                            <button id="prevPage" class="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
-                                <i class="fas fa-chevron-left"></i>
-                            </button>
-                            <div id="pageNumbers" class="flex space-x-1">
-                                <!-- Page numbers will be loaded here -->
-                            </div>
-                            <button id="nextPage" class="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
-                                <i class="fas fa-chevron-right"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-    
-    <!-- User Detail Modal -->
-    <div id="userDetailModal" class="modal">
-        <div class="modal-content">
-            <div class="p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-2xl font-bold">Detail Pengguna</h3>
-                    <button onclick="closeUserDetailModal()" class="text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times text-2xl"></i>
-                    </button>
+            <!-- Users Table -->
+            <div class="bg-white rounded-xl shadow overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengguna</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kontak</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Terdaftar</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200" id="usersTableBody">
+                            <!-- Table rows will be populated by JavaScript -->
+                        </tbody>
+                    </table>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <h4 class="font-medium mb-2">Informasi Pribadi</h4>
-                        <div class="bg-gray-50 p-4 rounded-lg mb-4">
-                            <p><strong>Nama Lengkap:</strong> <span id="detailUserName"></span></p>
-                            <p><strong>Email:</strong> <span id="detailUserEmail"></span></p>
-                            <p><strong>Telepon:</strong> <span id="detailUserPhone"></span></p>
-                            <p><strong>Alamat:</strong> <span id="detailUserAddress"></span></p>
-                            <p><strong>Tanggal Lahir:</strong> <span id="detailUserBirthdate"></span></p>
-                        </div>
-                        
-                        <h4 class="font-medium mb-2">Informasi Akun</h4>
-                        <div class="bg-gray-50 p-4 rounded-lg">
-                            <p><strong>Status Akun:</strong> <span id="detailUserStatus"></span></p>
-                            <p><strong>Status KTP:</strong> <span id="detailUserKtpStatus"></span></p>
-                            <p><strong>Tanggal Daftar:</strong> <span id="detailUserRegDate"></span></p>
-                            <p><strong>Login Terakhir:</strong> <span id="detailUserLastLogin"></span></p>
-                        </div>
+                <!-- Pagination -->
+                <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                    <div class="flex-1 flex justify-between sm:hidden">
+                        <button id="prevPageMobile" onclick="changePage('prev')" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Previous
+                        </button>
+                        <button id="nextPageMobile" onclick="changePage('next')" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Next
+                        </button>
                     </div>
-                    
-                    <div>
-                        <h4 class="font-medium mb-2">Dokumen KTP</h4>
-                        <div id="ktpContainer" class="border rounded-lg overflow-hidden mb-4 hidden">
-                            <img id="detailKtpImage" src="" alt="KTP" class="w-full h-auto">
-                            <div class="ktp-image-controls">
-                                <button class="ktp-control-btn" onclick="rotateImage(-90)">
-                                    <i class="fas fa-undo"></i>
-                                </button>
-                                <button class="ktp-control-btn" onclick="rotateImage(90)">
-                                    <i class="fas fa-redo"></i>
-                                </button>
-                                <a id="downloadKtpLink" href="#" target="_blank" class="ktp-control-btn">
-                                    <i class="fas fa-download"></i>
-                                </a>
-                            </div>
+                    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                        <div>
+                            <p class="text-sm text-gray-700">
+                                Menampilkan <span id="startItem" class="font-medium">1</span> sampai <span id="endItem" class="font-medium">10</span> dari <span id="totalItems" class="font-medium">0</span> hasil
+                            </p>
                         </div>
-                        
-                        <div id="noKtpMessage" class="bg-gray-100 p-4 rounded-lg text-center text-gray-500 mb-4">
-                            KTP belum diunggah
-                        </div>
-                        
-                        <div id="ktpVerificationSection" class="hidden">
-                            <h4 class="font-medium mb-2">Verifikasi KTP</h4>
-                            
-                            <div class="decision-cards">
-                                <label class="decision-card approve">
-                                    <input type="radio" name="decision" value="approve">
-                                    <div class="decision-content">
-                                        <div class="decision-icon approve">
-                                            <i class="fas fa-check"></i>
-                                        </div>
-                                        <div>
-                                            <h5 class="font-medium">Setujui Verifikasi</h5>
-                                            <p class="text-sm text-gray-600">KTP valid dan user berhak diverifikasi</p>
-                                        </div>
-                                    </div>
-                                </label>
-                                
-                                <label class="decision-card reject">
-                                    <input type="radio" name="decision" value="reject">
-                                    <div class="decision-content">
-                                        <div class="decision-icon reject">
-                                            <i class="fas fa-times"></i>
-                                        </div>
-                                        <div>
-                                            <h5 class="font-medium">Tolak Verifikasi</h5>
-                                            <p class="text-sm text-gray-600">KTP tidak valid atau user tidak berhak</p>
-                                        </div>
-                                    </div>
-                                </label>
-                            </div>
-                            
-                            <div id="rejectionReason" class="hidden">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Alasan Penolakan</label>
-                                <textarea id="rejectionReasonText" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Jelaskan alasan penolakan..."></textarea>
-                            </div>
-                            
-                            <div class="user-eligibility">
-                                <h5 class="font-medium mb-3">Kelayakan User</h5>
-                                <div class="eligibility-option">
-                                    <input type="radio" id="eligibleYes" name="eligibility" value="eligible" checked>
-                                    <label for="eligibleYes">User berhak melakukan verifikasi dan transaksi</label>
-                                </div>
-                                <div class="eligibility-option">
-                                    <input type="radio" id="eligibleNo" name="eligibility" value="not-eligible">
-                                    <label for="eligibleNo">User tidak berhak melakukan verifikasi atau transaksi</label>
-                                </div>
-                                <div class="eligibility-option">
-                                    <input type="radio" id="eligibleTemp" name="eligibility" value="temporary">
-                                    <label for="eligibleTemp">User berhak tetapi dengan batasan tertentu</label>
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Catatan (Opsional)</label>
-                                <textarea id="notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Tambahkan catatan jika diperlukan..."></textarea>
-                            </div>
-                            
-                            <div class="flex justify-end space-x-3 mt-6">
-                                <button onclick="closeUserDetailModal()" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                                    Batal
+                        <div>
+                            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                <button id="prevPage" onclick="changePage('prev')" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    <span class="sr-only">Previous</span>
+                                    <i class="fas fa-chevron-left"></i>
                                 </button>
-                                <button onclick="submitKtpVerification()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                                    Simpan Keputusan
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <h4 class="font-medium mb-2">Pengaturan Akun</h4>
-                        <div class="space-y-3">
-                            <div class="flex items-center justify-between">
-                                <span>Status Akun</span>
-                                <div class="flex items-center">
-                                    <span id="statusToggleLabel" class="mr-2 text-sm">Aktif</span>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" id="statusToggle" class="sr-only peer" checked>
-                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
-                                    </label>
+                                <div id="pageNumbers" class="flex">
+                                    <!-- Page numbers will be populated by JavaScript -->
                                 </div>
-                            </div>
-                            
-                            <div class="flex items-center justify-between">
-                                <span>Reset Password</span>
-                                <button onclick="resetPassword()" class="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm">
-                                    Reset
+                                <button id="nextPage" onclick="changePage('next')" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    <span class="sr-only">Next</span>
+                                    <i class="fas fa-chevron-right"></i>
                                 </button>
-                            </div>
-                        </div>
-                        
-                        <div class="flex justify-end space-x-3 mt-6">
-                            <button onclick="closeUserDetailModal()" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                                Tutup
-                            </button>
-                            <button onclick="saveUserChanges()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                                Simpan Perubahan
-                            </button>
+                            </nav>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
     </div>
     
     <script>
@@ -776,17 +602,504 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
-        const storage = firebase.storage();
+        
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://kgyuvurtwywzcnxqodzp.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtneXV2dXJ0d3l3emNueHFvZHpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTYyODksImV4cCI6MjA3MTU3MjI4OX0.n4MpZ4770X1gbLMp0ZArN-dzC9_apxg13AlrMCN-0MQ';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         // Global variables
         let currentUser = null;
-        let currentUserId = null;
-        let currentRotation = 0;
-        let currentZoom = 1;
         let users = [];
         let filteredUsers = [];
         let currentPage = 1;
         const itemsPerPage = 10;
+        let selectedUserId = null;
+        
+        // Loading functions
+        function showLoading(title = 'Memuat...', message = 'Mohon tunggu sebentar') {
+            document.getElementById('loadingTitle').textContent = title;
+            document.getElementById('loadingMessage').textContent = message;
+            document.getElementById('loadingOverlay').classList.add('show');
+        }
+        
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('show');
+        }
+        
+        // Mobile menu functions
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+            
+            mobileMenu.classList.toggle('open');
+            mobileMenuOverlay.classList.toggle('open');
+        }
+        
+        // Sidebar functions
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const content = document.getElementById('content');
+            
+            sidebar.classList.toggle('collapsed');
+            content.classList.toggle('expanded');
+        }
+        
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            showLoading('Memuat Data Pengguna...', 'Mengambil data pengguna');
+            
+            // Check user session
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    // User is signed in
+                    currentUser = {
+                        id: user.uid,
+                        email: user.email
+                    };
+                    
+                    // Check if user is admin
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    if (userDoc.exists) {
+                        const userData = userDoc.data();
+                        if (userData.role !== 'admin') {
+                            // User is not admin, redirect to home
+                            window.location.href = 'index.html';
+                            return;
+                        }
+                    } else {
+                        // User data not found, redirect to home
+                        window.location.href = 'index.html';
+                        return;
+                    }
+                    
+                    // Load users data
+                    await loadUsers();
+                    
+                    // Setup event listeners
+                    setupEventListeners();
+                } else {
+                    // User is signed out, redirect to login
+                    window.location.href = 'index.html';
+                }
+                
+                hideLoading();
+            });
+        });
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            // Search input
+            document.getElementById('searchInput').addEventListener('input', function(e) {
+                filterUsers();
+            });
+            
+            // Status filter
+            document.getElementById('statusFilter').addEventListener('change', function(e) {
+                filterUsers();
+            });
+        }
+        
+        // Load users
+        async function loadUsers() {
+            try {
+                const usersSnapshot = await db.collection('users').get();
+                users = [];
+                
+                usersSnapshot.forEach(doc => {
+                    const userData = doc.data();
+                    users.push({
+                        id: doc.id,
+                        ...userData
+                    });
+                });
+                
+                // Filter users
+                filterUsers();
+                
+                // Update stats
+                updateStats();
+            } catch (error) {
+                console.error('Error loading users:', error);
+                showNotification('Gagal memuat data pengguna', 'error');
+            }
+        }
+        
+        // Filter users
+        function filterUsers() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            filteredUsers = users.filter(user => {
+                // Filter by search term
+                const matchesSearch = searchTerm === '' || 
+                    (user.firstName && user.firstName.toLowerCase().includes(searchTerm)) ||
+                    (user.lastName && user.lastName.toLowerCase().includes(searchTerm)) ||
+                    (user.email && user.email.toLowerCase().includes(searchTerm)) ||
+                    (user.phone && user.phone.includes(searchTerm));
+                
+                // Filter by status
+                let matchesStatus = true;
+                if (statusFilter === 'verified') {
+                    matchesStatus = user.ktpVerified === true;
+                } else if (statusFilter === 'pending') {
+                    matchesStatus = user.ktpUploaded === true && user.ktpVerified !== true;
+                } else if (statusFilter === 'not-uploaded') {
+                    matchesStatus = user.ktpUploaded !== true;
+                }
+                
+                return matchesSearch && matchesStatus;
+            });
+            
+            // Reset to first page
+            currentPage = 1;
+            
+            // Render users table
+            renderUsersTable();
+            
+            // Render pagination
+            renderPagination();
+        }
+        
+        // Update stats
+        function updateStats() {
+            const totalUsers = users.length;
+            const verifiedUsers = users.filter(user => user.ktpVerified).length;
+            const pendingUsers = users.filter(user => user.ktpUploaded && !user.ktpVerified).length;
+            
+            document.getElementById('totalUsersCount').textContent = totalUsers;
+            document.getElementById('verifiedUsersCount').textContent = verifiedUsers;
+            document.getElementById('pendingUsersCount').textContent = pendingUsers;
+        }
+        
+        // Render users table
+        function renderUsersTable() {
+            const usersTableBody = document.getElementById('usersTableBody');
+            usersTableBody.innerHTML = '';
+            
+            if (filteredUsers.length === 0) {
+                usersTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                            Tidak ada pengguna yang ditemukan
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Calculate pagination
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, filteredUsers.length);
+            const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+            
+            paginatedUsers.forEach(user => {
+                const row = document.createElement('tr');
+                
+                // Format date
+                let createdDate = 'Tidak diketahui';
+                if (user.createdAt) {
+                    const date = user.createdAt.toDate ? 
+                        new Date(user.createdAt.toDate()) : 
+                        new Date(user.createdAt);
+                    createdDate = date.toLocaleDateString('id-ID');
+                }
+                
+                // Determine status
+                let statusBadge = '';
+                if (user.ktpVerified) {
+                    statusBadge = '<span class="status-badge verified">Terverifikasi</span>';
+                } else if (user.ktpUploaded) {
+                    statusBadge = '<span class="status-badge pending">Menunggu Verifikasi</span>';
+                } else {
+                    statusBadge = '<span class="status-badge not-uploaded">Belum Upload</span>';
+                }
+                
+                // Determine action buttons
+                let actionButtons = '';
+                if (user.ktpUploaded && !user.ktpVerified) {
+                    actionButtons = `
+                        <button onclick="openVerificationModal('${user.id}')" class="text-blue-600 hover:text-blue-800 mr-3">
+                            <i class="fas fa-check-circle"></i> Verifikasi
+                        </button>
+                    `;
+                }
+                
+                actionButtons += `
+                    <button onclick="viewUserDetails('${user.id}')" class="text-gray-600 hover:text-gray-800">
+                        <i class="fas fa-eye"></i> Detail
+                    </button>
+                `;
+                
+                // User avatar
+                const userAvatar = user.profileImageUrl || 'https://via.placeholder.com/40';
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-10 w-10">
+                                <img class="user-avatar" src="${userAvatar}" alt="${user.firstName || ''} ${user.lastName || ''}">
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">${user.firstName || ''} ${user.lastName || ''}</div>
+                                <div class="text-sm text-gray-500">${user.email || ''}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">${user.phone || '-'}</div>
+                        <div class="text-sm text-gray-500">${user.address || '-'}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        ${statusBadge}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${createdDate}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        ${actionButtons}
+                    </td>
+                `;
+                
+                usersTableBody.appendChild(row);
+            });
+            
+            // Update pagination info
+            document.getElementById('startItem').textContent = filteredUsers.length > 0 ? startIndex + 1 : 0;
+            document.getElementById('endItem').textContent = endIndex;
+            document.getElementById('totalItems').textContent = filteredUsers.length;
+        }
+        
+        // Render pagination
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+            const pageNumbers = document.getElementById('pageNumbers');
+            pageNumbers.innerHTML = '';
+            
+            // Previous button
+            document.getElementById('prevPage').disabled = currentPage === 1;
+            document.getElementById('prevPageMobile').disabled = currentPage === 1;
+            
+            // Next button
+            document.getElementById('nextPage').disabled = currentPage === totalPages || totalPages === 0;
+            document.getElementById('nextPageMobile').disabled = currentPage === totalPages || totalPages === 0;
+            
+            // Page numbers
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            
+            if (startPage > 1) {
+                pageNumbers.appendChild(createPageButton(1));
+                if (startPage > 2) {
+                    pageNumbers.appendChild(createPageEllipsis());
+                }
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                pageNumbers.appendChild(createPageButton(i));
+            }
+            
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    pageNumbers.appendChild(createPageEllipsis());
+                }
+                pageNumbers.appendChild(createPageButton(totalPages));
+            }
+        }
+        
+        // Create page button
+        function createPageButton(page) {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = `relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                page === currentPage 
+                    ? 'z-10 bg-orange-50 border-orange-500 text-orange-600' 
+                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+            }`;
+            button.textContent = page;
+            button.onclick = () => goToPage(page);
+            return button;
+        }
+        
+        // Create page ellipsis
+        function createPageEllipsis() {
+            const span = document.createElement('span');
+            span.className = 'relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700';
+            span.textContent = '...';
+            return span;
+        }
+        
+        // Change page
+        function changePage(direction) {
+            const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+            
+            if (direction === 'prev' && currentPage > 1) {
+                currentPage--;
+            } else if (direction === 'next' && currentPage < totalPages) {
+                currentPage++;
+            }
+            
+            renderUsersTable();
+            renderPagination();
+        }
+        
+        // Go to page
+        function goToPage(page) {
+            currentPage = page;
+            renderUsersTable();
+            renderPagination();
+        }
+        
+        // Open verification modal
+        async function openVerificationModal(userId) {
+            selectedUserId = userId;
+            
+            try {
+                // Get user data
+                const userDoc = await db.collection('users').doc(userId).get();
+                if (!userDoc.exists) {
+                    showNotification('Pengguna tidak ditemukan', 'error');
+                    return;
+                }
+                
+                const userData = userDoc.data();
+                
+                // Update modal with user data
+                document.getElementById('modalUserAvatar').src = userData.profileImageUrl || 'https://via.placeholder.com/40';
+                document.getElementById('modalUserName').textContent = `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'User';
+                document.getElementById('modalUserEmail').textContent = userData.email || '';
+                document.getElementById('modalKtpImage').src = userData.ktpUrl || 'https://via.placeholder.com/600';
+                document.getElementById('verificationNotes').value = '';
+                
+                // Show modal
+                document.getElementById('verificationModal').classList.add('show');
+            } catch (error) {
+                console.error('Error opening verification modal:', error);
+                showNotification('Gagal membuka modal verifikasi', 'error');
+            }
+        }
+        
+        // Close verification modal
+        function closeVerificationModal() {
+            document.getElementById('verificationModal').classList.remove('show');
+            selectedUserId = null;
+        }
+        
+        // Approve verification
+        async function approveVerification() {
+            if (!selectedUserId) return;
+            
+            const notes = document.getElementById('verificationNotes').value;
+            
+            showLoading('Menyetujui Verifikasi...', 'Mohon tunggu sebentar');
+            
+            try {
+                // Update user data in Firestore
+                await db.collection('users').doc(selectedUserId).update({
+                    ktpVerified: true,
+                    ktpVerifiedDate: firebase.firestore.FieldValue.serverTimestamp(),
+                    ktpVerifiedBy: currentUser.id,
+                    ktpVerifiedNotes: notes
+                });
+                
+                // Update local users array
+                const userIndex = users.findIndex(user => user.id === selectedUserId);
+                if (userIndex !== -1) {
+                    users[userIndex] = {
+                        ...users[userIndex],
+                        ktpVerified: true,
+                        ktpVerifiedDate: new Date(),
+                        ktpVerifiedBy: currentUser.id,
+                        ktpVerifiedNotes: notes
+                    };
+                }
+                
+                // Close modal
+                closeVerificationModal();
+                
+                // Refresh users table
+                filterUsers();
+                
+                // Update stats
+                updateStats();
+                
+                hideLoading();
+                showNotification('Verifikasi berhasil disetujui', 'success');
+            } catch (error) {
+                console.error('Error approving verification:', error);
+                hideLoading();
+                showNotification('Gagal menyetujui verifikasi', 'error');
+            }
+        }
+        
+        // Reject verification
+        async function rejectVerification() {
+            if (!selectedUserId) return;
+            
+            const notes = document.getElementById('verificationNotes').value;
+            
+            if (!notes.trim()) {
+                showNotification('Silakan tambahkan catatan untuk penolakan verifikasi', 'error');
+                return;
+            }
+            
+            showLoading('Menolak Verifikasi...', 'Mohon tunggu sebentar');
+            
+            try {
+                // Update user data in Firestore
+                await db.collection('users').doc(selectedUserId).update({
+                    ktpUploaded: false,
+                    ktpUrl: null,
+                    ktpUploadDate: null,
+                    ktpRejected: true,
+                    ktpRejectedDate: firebase.firestore.FieldValue.serverTimestamp(),
+                    ktpRejectedBy: currentUser.id,
+                    ktpRejectedNotes: notes
+                });
+                
+                // Update local users array
+                const userIndex = users.findIndex(user => user.id === selectedUserId);
+                if (userIndex !== -1) {
+                    users[userIndex] = {
+                        ...users[userIndex],
+                        ktpUploaded: false,
+                        ktpUrl: null,
+                        ktpUploadDate: null,
+                        ktpRejected: true,
+                        ktpRejectedDate: new Date(),
+                        ktpRejectedBy: currentUser.id,
+                        ktpRejectedNotes: notes
+                    };
+                }
+                
+                // Close modal
+                closeVerificationModal();
+                
+                // Refresh users table
+                filterUsers();
+                
+                // Update stats
+                updateStats();
+                
+                hideLoading();
+                showNotification('Verifikasi berhasil ditolak', 'success');
+            } catch (error) {
+                console.error('Error rejecting verification:', error);
+                hideLoading();
+                showNotification('Gagal menolak verifikasi', 'error');
+            }
+        }
+        
+        // View user details
+        function viewUserDetails(userId) {
+            // Redirect to user details page
+            window.location.href = `detail-pengguna.html?id=${userId}`;
+        }
         
         // Show notification
         function showNotification(message, type = 'info') {
@@ -795,443 +1108,35 @@
             
             notificationText.textContent = message;
             notification.className = `notification ${type}`;
-            notification.classList.add('show');
             
+            // Show notification
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            // Hide notification after 5 seconds
             setTimeout(() => {
                 notification.classList.remove('show');
             }, 5000);
         }
         
-        // Show/hide loading
-        function showLoading(show = true) {
-            const overlay = document.getElementById('loadingOverlay');
-            if (show) {
-                overlay.classList.add('show');
-            } else {
-                overlay.classList.remove('show');
-            }
-        }
-        
-        // Toggle sidebar on mobile
-        document.getElementById('menuToggle').addEventListener('click', function() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('mobile-open');
-        });
-        
-        // Check if user is admin
-        auth.onAuthStateChanged(async (user) => {
-            if (!user) {
-                window.location.href = 'https://apple-sale-original.github.io/login-admin/';
-                return;
-            }
+        // Logout
+        async function logout() {
+            showLoading('Keluar...', 'Mengakhiri sesi');
             
             try {
-                // Check if user is admin
-                const userDoc = await db.collection('users').doc(user.uid).get();
-                if (!userDoc.exists || !userDoc.data().isAdmin) {
-                    alert('Anda tidak memiliki akses ke halaman ini');
-                    await auth.signOut();
-                    window.location.href = 'https://apple-sale-original.github.io/login-admin/';
-                    return;
-                }
+                await auth.signOut();
                 
-                currentUser = { id: user.uid, ...userDoc.data() };
+                hideLoading();
                 
-                // Update admin name
-                document.getElementById('adminName').textContent = 
-                    `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim() || 'Admin';
-                
-                // Load user data
-                loadUserData();
-                
-                // Setup event listeners
-                setupEventListeners();
-                
+                // Redirect to login page
+                window.location.href = 'index.html';
             } catch (error) {
-                console.error('Error checking admin status:', error);
-                showNotification('Terjadi kesalahan saat memuat data', 'error');
-            }
-        });
-        
-        // Setup event listeners
-        function setupEventListeners() {
-            // Status filter
-            document.getElementById('statusFilter').addEventListener('change', function() {
-                filterUsers();
-            });
-            
-            // KTP filter
-            document.getElementById('ktpFilter').addEventListener('change', function() {
-                filterUsers();
-            });
-            
-            // Search input
-            document.getElementById('searchInput').addEventListener('input', function() {
-                filterUsers();
-            });
-            
-            // Status toggle
-            document.getElementById('statusToggle').addEventListener('change', function() {
-                const label = document.getElementById('statusToggleLabel');
-                label.textContent = this.checked ? 'Aktif' : 'Nonaktif';
-            });
-            
-            // Decision change for KTP verification
-            document.addEventListener('change', function(e) {
-                if (e.target.name === 'decision') {
-                    const rejectionReason = document.getElementById('rejectionReason');
-                    const decisionCards = document.querySelectorAll('.decision-card');
-                    
-                    decisionCards.forEach(card => {
-                        card.classList.remove('selected');
-                    });
-                    
-                    if (e.target.value === 'approve') {
-                        rejectionReason.classList.add('hidden');
-                        e.target.closest('.decision-card').classList.add('selected');
-                    } else if (e.target.value === 'reject') {
-                        rejectionReason.classList.remove('hidden');
-                        e.target.closest('.decision-card').classList.add('selected');
-                    }
-                }
-            });
-            
-            // Pagination
-            document.getElementById('prevPage').addEventListener('click', function() {
-                if (currentPage > 1) {
-                    currentPage--;
-                    renderTable();
-                }
-            });
-            
-            document.getElementById('nextPage').addEventListener('click', function() {
-                const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
-                if (currentPage < totalPages) {
-                    currentPage++;
-                    renderTable();
-                }
-            });
-        }
-        
-        // Load user data
-        async function loadUserData() {
-            showLoading(true);
-            
-            try {
-                const snapshot = await db.collection('users')
-                    .orderBy('createdAt', 'desc')
-                    .get();
-                
-                users = [];
-                snapshot.forEach(doc => {
-                    // Skip admin users
-                    if (doc.data().isAdmin) return;
-                    
-                    users.push({
-                        id: doc.id,
-                        ...doc.data()
-                    });
-                });
-                
-                filterUsers();
-                updateStats();
-                
-            } catch (error) {
-                console.error('Error loading user data:', error);
-                showNotification('Gagal memuat data pengguna', 'error');
-            } finally {
-                showLoading(false);
+                console.error('Error logging out:', error);
+                hideLoading();
+                showNotification('Gagal keluar. Silakan coba lagi.', 'error');
             }
         }
-        
-        // Filter users
-        function filterUsers() {
-            const statusFilter = document.getElementById('statusFilter').value;
-            const ktpFilter = document.getElementById('ktpFilter').value;
-            const searchInput = document.getElementById('searchInput').value.toLowerCase();
-            
-            filteredUsers = users.filter(user => {
-                // Status filter
-                if (statusFilter !== 'all') {
-                    if (statusFilter === 'active' && user.inactive) return false;
-                    if (statusFilter === 'inactive' && !user.inactive) return false;
-                }
-                
-                // KTP filter
-                if (ktpFilter !== 'all') {
-                    if (ktpFilter === 'verified' && !user.ktpVerified) return false;
-                    if (ktpFilter === 'pending' && (!user.ktpUploaded || user.ktpVerified || user.ktpRejected)) return false;
-                    if (ktpFilter === 'rejected' && !user.ktpRejected) return false;
-                    if (ktpFilter === 'not-uploaded' && user.ktpUploaded) return false;
-                }
-                
-                // Search filter
-                if (searchInput) {
-                    const fullName = `${user.firstName || ''} ${user.lastName || ''}`.toLowerCase();
-                    if (!fullName.includes(searchInput) && 
-                        !user.email.toLowerCase().includes(searchInput)) {
-                        return false;
-                    }
-                }
-                
-                return true;
-            });
-            
-            currentPage = 1;
-            renderTable();
-        }
-        
-        // Render table
-        function renderTable() {
-            const tbody = document.getElementById('userTableBody');
-            tbody.innerHTML = '';
-            
-            const start = (currentPage - 1) * itemsPerPage;
-            const end = Math.min(start + itemsPerPage, filteredUsers.length);
-            const pageItems = filteredUsers.slice(start, end);
-            
-            if (pageItems.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="7" class="py-8 text-center text-gray-500">
-                            Tidak ada data pengguna
-                        </td>
-                    </tr>
-                `;
-            } else {
-                pageItems.forEach(user => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td class="py-3 px-4">
-                            <div class="flex items-center">
-                                <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center mr-3">
-                                    <i class="fas fa-user text-gray-600 text-sm"></i>
-                                </div>
-                                <span class="font-medium">${user.firstName || ''} ${user.lastName || ''}</span>
-                            </div>
-                        </td>
-                        <td class="py-3 px-4 text-sm text-gray-600">${user.email}</td>
-                        <td class="py-3 px-4 text-sm text-gray-600">${user.phone || '-'}</td>
-                        <td class="py-3 px-4">
-                            ${getKtpBadge(user)}
-                        </td>
-                        <td class="py-3 px-4">
-                            ${getUserStatusBadge(user)}
-                        </td>
-                        <td class="py-3 px-4 text-sm text-gray-600">
-                            ${user.createdAt ? new Date(user.createdAt.toDate()).toLocaleDateString('id-ID') : '-'}
-                        </td>
-                        <td class="py-3 px-4">
-                            <div class="flex space-x-2">
-                                <button onclick="openUserDetailModal('${user.id}')" class="text-blue-600 hover:text-blue-900 text-sm font-medium" title="Detail">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                ${user.ktpUploaded && !user.ktpVerified && !user.ktpRejected ? 
-                                    `<button onclick="quickApproveKtp('${user.id}')" class="text-green-600 hover:text-green-900 text-sm font-medium" title="Setujui KTP">
-                                        <i class="fas fa-check"></i>
-                                    </button>` : ''}
-                                ${user.ktpUploaded && !user.ktpVerified && !user.ktpRejected ? 
-                                    `<button onclick="quickRejectKtp('${user.id}')" class="text-red-600 hover:text-red-900 text-sm font-medium" title="Tolak KTP">
-                                        <i class="fas fa-times"></i>
-                                    </button>` : ''}
-                                <button onclick="toggleUserStatus('${user.id}')" class="text-${user.inactive ? 'green' : 'red'}-600 hover:text-${user.inactive ? 'green' : 'red'}-900 text-sm font-medium" title="${user.inactive ? 'Aktifkan' : 'Nonaktifkan'}">
-                                    <i class="fas fa-${user.inactive ? 'check' : 'ban'}"></i>
-                                </button>
-                            </div>
-                        </td>
-                    `;
-                    tbody.appendChild(row);
-                });
-            }
-            
-            // Update pagination info
-            document.getElementById('startItem').textContent = filteredUsers.length > 0 ? start + 1 : 0;
-            document.getElementById('endItem').textContent = end;
-            document.getElementById('totalItems').textContent = filteredUsers.length;
-            
-            // Update pagination buttons
-            document.getElementById('prevPage').disabled = currentPage === 1;
-            document.getElementById('nextPage').disabled = currentPage === Math.ceil(filteredUsers.length / itemsPerPage);
-            
-            // Update page numbers
-            renderPageNumbers();
-        }
-        
-        // Render page numbers
-        function renderPageNumbers() {
-            const pageNumbers = document.getElementById('pageNumbers');
-            pageNumbers.innerHTML = '';
-            
-            const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
-            const maxVisiblePages = 5;
-            
-            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-            
-            if (endPage - startPage + 1 < maxVisiblePages) {
-                startPage = Math.max(1, endPage - maxVisiblePages + 1);
-            }
-            
-            for (let i = startPage; i <= endPage; i++) {
-                const pageButton = document.createElement('button');
-                pageButton.textContent = i;
-                pageButton.className = `px-3 py-1 rounded-lg ${i === currentPage ? 
-                    'bg-amber-500 text-white' : 'border border-gray-300 hover:bg-gray-50'}`;
-                pageButton.addEventListener('click', function() {
-                    currentPage = i;
-                    renderTable();
-                });
-                pageNumbers.appendChild(pageButton);
-            }
-        }
-        
-        // Update stats
-        function updateStats() {
-            let total = 0, active = 0, inactive = 0;
-            
-            users.forEach(user => {
-                total++;
-                if (user.inactive) {
-                    inactive++;
-                } else {
-                    active++;
-                }
-            });
-            
-            document.getElementById('totalUsersCount').textContent = total;
-            document.getElementById('activeUsersCount').textContent = active;
-            document.getElementById('inactiveUsersCount').textContent = inactive;
-        }
-        
-        // Get KTP badge HTML
-        function getKtpBadge(user) {
-            if (user.ktpVerified) {
-                return '<span class="verification-badge verified">Terverifikasi</span>';
-            } else if (user.ktpRejected) {
-                return '<span class="verification-badge rejected">Ditolak</span>';
-            } else if (user.ktpUploaded) {
-                return '<span class="verification-badge pending">Pending</span>';
-            } else {
-                return '<span class="verification-badge not-uploaded">Belum Upload</span>';
-            }
-        }
-        
-        // Get user status badge HTML
-        function getUserStatusBadge(user) {
-            if (user.inactive) {
-                return '<span class="user-badge inactive">Nonaktif</span>';
-            } else {
-                return '<span class="user-badge active">Aktif</span>';
-            }
-        }
-        
-        // Quick approve KTP
-        async function quickApproveKtp(userId) {
-            if (!confirm('Apakah Anda yakin ingin menyetujui KTP pengguna ini?')) {
-                return;
-            }
-            
-            showLoading(true);
-            
-            try {
-                await db.collection('users').doc(userId).update({
-                    ktpVerified: true,
-                    ktpRejected: false,
-                    ktpVerifiedDate: firebase.firestore.FieldValue.serverTimestamp(),
-                    ktpVerifiedBy: currentUser.id,
-                    userEligibility: 'eligible' // Default to eligible when quick approved
-                });
-                
-                // Send notification to user
-                await sendKtpVerificationNotification(userId, 'approve', '', 'eligible');
-                
-                // Log verification activity
-                await logKtpVerificationActivity(userId, 'approve', '', 'eligible');
-                
-                showLoading(false);
-                showNotification('KTP berhasil disetujui. User berhak melakukan transaksi.', 'success');
-                
-                // Reload data
-                loadUserData();
-                
-            } catch (error) {
-                console.error('Error quick approving KTP:', error);
-                showLoading(false);
-                showNotification('Gagal menyetujui KTP', 'error');
-            }
-        }
-        
-        // Quick reject KTP
-        async function quickRejectKtp(userId) {
-            if (!confirm('Apakah Anda yakin ingin menolak KTP pengguna ini?')) {
-                return;
-            }
-            
-            const reason = prompt('Alasan penolakan:');
-            if (reason === null || reason.trim() === '') {
-                showNotification('Alasan penolakan harus diisi', 'error');
-                return;
-            }
-            
-            showLoading(true);
-            
-            try {
-                await db.collection('users').doc(userId).update({
-                    ktpVerified: false,
-                    ktpRejected: true,
-                    ktpRejectedDate: firebase.firestore.FieldValue.serverTimestamp(),
-                    ktpRejectedBy: currentUser.id,
-                    ktpRejectionReason: reason,
-                    userEligibility: 'not-eligible' // Default to not eligible when quick rejected
-                });
-                
-                // Send notification to user
-                await sendKtpVerificationNotification(userId, 'reject', reason, 'not-eligible');
-                
-                // Log verification activity
-                await logKtpVerificationActivity(userId, 'reject', reason, 'not-eligible');
-                
-                showLoading(false);
-                showNotification('KTP berhasil ditolak. User tidak berhak melakukan transaksi.', 'success');
-                
-                // Reload data
-                loadUserData();
-                
-            } catch (error) {
-                console.error('Error quick rejecting KTP:', error);
-                showLoading(false);
-                showNotification('Gagal menolak KTP', 'error');
-            }
-        }
-        
-        // Open user detail modal
-        async function openUserDetailModal(userId) {
-            currentUserId = userId;
-            currentRotation = 0;
-            currentZoom = 1;
-            
-            try {
-                const userDoc = await db.collection('users').doc(userId).get();
-                const userData = userDoc.data();
-                
-                // Personal information
-                document.getElementById('detailUserName').textContent = 
-                    `${userData.firstName || ''} ${userData.lastName || ''}`.trim();
-                document.getElementById('detailUserEmail').textContent = userData.email;
-                document.getElementById('detailUserPhone').textContent = userData.phone || '-';
-                document.getElementById('detailUserAddress').textContent = userData.address || '-';
-                document.getElementById('detailUserBirthdate').textContent = 
-                    userData.birthdate ? new Date(userData.birthdate).toLocaleDateString('id-ID') : '-';
-                
-                // Account information
-                document.getElementById('detailUserStatus').innerHTML = getUserStatusBadge(userData);
-                document.getElementById('detailUserKtpStatus').innerHTML = getKtpBadge(userData);
-                document.getElementById('detailUserRegDate').textContent = 
-                    userData.createdAt ? new Date(userData.createdAt.toDate()).toLocaleDateString('id-ID') : '-';
-                document.getElementById('detailUserLastLogin').textContent = 
-                    userData.lastLogin ? new Date(userData.lastLogin.toDate()).toLocaleDateString('id-ID') : '-';
-                
-                // KTP image and verification section
-                const ktpContainer = document.getElementById('ktpContainer');
-                const noKtpMessage = document.getElementById('noKtpMessage');
-                const ktp
+    </script>
+</body>
+</html>
